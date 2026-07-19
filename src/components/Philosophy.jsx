@@ -7,14 +7,26 @@ import { philosophyText } from "../lib/content";
 export default function Philosophy() {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const imageY = useTransform(scrollYProgress, [0, 1], ["-9%", "9%"]);
+  const imageScale = useTransform(scrollYProgress, [0, 1], [1.1, 1.22]);
   const ghostY = useTransform(scrollYProgress, [0, 1], ["-6%", "10%"]);
-  const ghostOpacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 0.06, 0.06, 0]);
+  const ghostOpacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 0.07, 0.07, 0]);
 
   return (
     <section
       ref={ref}
-      className="relative bg-forest text-paper px-6 md:px-10 pt-40 md:pt-56 pb-32 md:pb-44 overflow-hidden"
+      className="relative text-paper px-6 md:px-10 pt-40 md:pt-56 pb-32 md:pb-44 overflow-hidden bg-forest-deep"
     >
+      <motion.div style={{ y: imageY, scale: imageScale }} className="absolute inset-0">
+        <img
+          src="/images/home-hero.jpg"
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full object-cover"
+        />
+      </motion.div>
+      <div className="absolute inset-0 bg-forest-deep/80" />
+
       <SectionBlend from="var(--color-parchment)" height="40vh" />
 
       <motion.span

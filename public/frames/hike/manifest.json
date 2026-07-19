@@ -1,0 +1,11 @@
+{
+  "source": "0_Hike_Hicking_1280x720.mp4",
+  "frameCount": 360,
+  "width": 1280,
+  "height": 720,
+  "fps": 23.976,
+  "duration": 15,
+  "extension": "jpg",
+  "pattern": "frame_%04d.jpg",
+  "path": "frames/hike/"
+}
