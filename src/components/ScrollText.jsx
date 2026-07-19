@@ -14,7 +14,9 @@ function Char({ char, range, progress }) {
 export default function ScrollText({
   text,
   className = '',
+  style,
   lead = '',
+  leadStyle,
   progress: external,
   start = 0,
   end = 0.9,
@@ -31,8 +33,8 @@ export default function ScrollText({
   let cursor = 0
 
   return (
-    <p ref={ref} className={className}>
-      {lead && <span className="text-white">{lead} </span>}
+    <p ref={ref} className={className} style={style}>
+      {lead && <span style={leadStyle}>{lead} </span>}
       {text.split(' ').map((word, wi, arr) => (
         <span key={wi}>
           <span className="inline-block whitespace-nowrap">

@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "import:playground": "node scripts/import-playground-components.mjs",
+    "import:video-scrub": "node scripts/import-video-scrub.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },
@@ -21,6 +23,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "autoprefixer": "^10.5.2",
+    "esbuild": "^0.28.1",
     "oxlint": "^1.71.0",
     "postcss": "^8.5.16",
     "tailwindcss": "^3.4.19",

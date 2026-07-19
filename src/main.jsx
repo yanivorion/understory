@@ -3,7 +3,9 @@ import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 import { ConfigProvider } from './lib/ConfigProvider'
+import { EditorUIProvider } from './lib/EditorUIContext'
 import EditorPanel from './components/EditorPanel'
+import FontLoader from './components/FontLoader'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import Collection from './pages/Collection'
@@ -28,8 +30,11 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ConfigProvider>
-      <RouterProvider router={router} />
-      <EditorPanel />
+      <EditorUIProvider>
+        <FontLoader />
+        <RouterProvider router={router} />
+        <EditorPanel />
+      </EditorUIProvider>
     </ConfigProvider>
   </StrictMode>,
 )

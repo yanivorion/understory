@@ -1,8 +1,25 @@
 import { useCallback, useEffect, useState } from "react";
 import { base44 } from "../api/base44Client";
 import { useSiteConfig } from "../lib/ConfigProvider";
-import { THEME_KEYS, BACKGROUND_SECTIONS, BACKGROUND_TYPE_SUPPORT } from "../lib/siteConfigDefaults";
+import { useEditorUI } from "../lib/EditorUIContext";
+import { THEME_KEYS, BACKGROUND_TYPE_SUPPORT } from "../lib/siteConfigDefaults";
 import { SEQUENCE_OPTIONS } from "../lib/frameSequences";
+import {
+  createCustomSection,
+  defaultBackgroundForSection,
+  getSectionLabel,
+  insertSection,
+  isPlaygroundSectionId,
+  NATIVE_BG_HEX,
+  reorderSections,
+  resolveSectionOrder,
+} from "../lib/homeSections";
+import { createPlaygroundSection, PLAYGROUND_MANIFESTS } from "../lib/playgroundRegistry";
+import PlaygroundConfigEditor from "./PlaygroundConfigEditor";
+import PlaygroundPicker from "./PlaygroundPicker";
+import TextStyleEditor from "./TextStyleEditor";
+import { buildStripGradient, normalizeGradientStrip, stripOverlapVh } from "../lib/gradientStrip";
+import { TEXT_FIELD_REGISTRY } from "../lib/textStyles";
 
 // Fixed, theme-independent colors for the editor chrome. Deliberately NOT
 // using the site's own bg-ink/text-paper/etc. utility classes — those are
@@ -39,23 +56,14 @@ const THEME_LABELS = {
 const BACKGROUND_LABELS = {
   hero: "Hero",
   philosophy: "Philosophy",
+  journeys: "Journeys",
   arrival: "Arrival",
+  tryThis: "Try This",
   recognition: "Recognition",
   contact: "Contact band",
 };
 
-// Shown in the color swatch when a section's color override is empty (i.e.
-// "use the theme default") — matches each section's native Tailwind bg-*
-// class so the swatch isn't misleadingly showing ink for everything.
-const NATIVE_BG_HEX = {
-  hero: "#141009",
-  philosophy: "#041f0a",
-  arrival: "#141009",
-  recognition: "#141009",
-  contact: "#e3d8c4",
-};
-
-const TABS = ["Theme", "Content", "Journeys", "Backgrounds"];
+const TABS = ["Theme", "Typography", "Content", "Journeys", "Sections", "Components", "Backgrounds"];
 
 function Field({ label, value, onChange, multiline }) {
   return (
@@ -106,6 +114,138 @@ function Select({ label, value, onChange, options }) {
   );
 }
 
+function GradientEndpoint({ title, colorKey, opacityKey, strip, onChange, sectionKey, allowDefault, inheritFrom }) {
+  const fallback = NATIVE_BG_HEX[sectionKey] || "#141009";
+  const inherited = inheritFrom ? strip[inheritFrom] : "";
+  const color = strip[colorKey] || inherited || fallback;
+  const opacity = strip[opacityKey] ?? (opacityKey === "opacity" ? 1 : 0);
+
+  return (
+    <div className="rounded-md p-2.5" style={{ background: C.inputBg, border: `1px solid ${C.border}` }}>
+      <span className="block mb-2 text-[10px] uppercase tracking-wide" style={{ color: C.textFaint }}>
+        {title}
+      </span>
+      <div className="flex items-center gap-2 mb-2">
+        <input
+          type="color"
+          value={color}
+          onChange={(e) => onChange({ ...strip, [colorKey]: e.target.value })}
+          className="h-8 w-8 rounded cursor-pointer shrink-0"
+          style={{ border: `1px solid ${C.border}` }}
+        />
+        {allowDefault && (
+          <button
+            type="button"
+            onClick={() => onChange({ ...strip, [colorKey]: "" })}
+            className="text-[10px] uppercase tracking-wide"
+            style={{ color: C.textMuted }}
+          >
+            Section default
+          </button>
+        )}
+      </div>
+      <label className="block">
+        <span className="block mb-1 text-[10px] uppercase tracking-wide" style={{ color: C.textFaint }}>
+          Opacity ({Math.round(opacity * 100)}%)
+        </span>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={opacity}
+          onChange={(e) => onChange({ ...strip, [opacityKey]: parseFloat(e.target.value) })}
+          className="w-full"
+        />
+      </label>
+    </div>
+  );
+}
+
+function GradientStripControls({ label, value, onChange, sectionKey, position }) {
+  const strip = normalizeGradientStrip(value);
+  const edgeLabel = position === "top" ? "Edge (top)" : "Edge (bottom)";
+  const innerLabel = position === "top" ? "Inner (fade down)" : "Inner (fade up)";
+
+  return (
+    <div className="rounded-lg p-3" style={{ background: C.cardAlt, border: `1px solid ${C.border}` }}>
+      <label className="flex items-center gap-2 mb-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={!!strip.enabled}
+          onChange={(e) => onChange({ ...strip, enabled: e.target.checked })}
+        />
+        <span className="text-[11px] uppercase tracking-wide" style={{ color: C.textMuted }}>
+          {label}
+        </span>
+      </label>
+      {strip.enabled && (
+        <div className="flex flex-col gap-3">
+          <div
+            className="h-10 w-full rounded-md"
+            style={{
+              border: `1px solid ${C.border}`,
+              background: buildStripGradient(strip, position, sectionKey),
+            }}
+            title="Gradient preview"
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <GradientEndpoint
+              title={edgeLabel}
+              colorKey="color"
+              opacityKey="opacity"
+              strip={strip}
+              onChange={onChange}
+              sectionKey={sectionKey}
+              allowDefault
+            />
+            <GradientEndpoint
+              title={innerLabel}
+              colorKey="colorEnd"
+              opacityKey="opacityEnd"
+              strip={strip}
+              onChange={onChange}
+              sectionKey={sectionKey}
+              allowDefault={false}
+              inheritFrom="color"
+            />
+          </div>
+          <label className="block">
+            <span className="block mb-1.5 text-[11px] uppercase tracking-wide" style={{ color: C.textMuted }}>
+              Strip height ({strip.height ?? 22}vh)
+            </span>
+            <input
+              type="range"
+              min="8"
+              max="45"
+              step="1"
+              value={strip.height ?? 22}
+              onChange={(e) => onChange({ ...strip, height: parseInt(e.target.value, 10) })}
+              className="w-full"
+            />
+          </label>
+          <label className="block">
+            <span className="block mb-1.5 text-[11px] uppercase tracking-wide" style={{ color: C.textMuted }}>
+              Overlap into neighbor ({strip.overlap ?? 100}%)
+            </span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              value={strip.overlap ?? 100}
+              onChange={(e) => onChange({ ...strip, overlap: parseInt(e.target.value, 10) })}
+              className="w-full"
+            />
+            <span className="mt-1 block text-[10px]" style={{ color: C.textFaint }}>
+              Extends {stripOverlapVh(strip).toFixed(1)}vh into the {position === "top" ? "section above" : "section below"}
+            </span>
+          </label>
+        </div>
+      )}
+    </div>
+  );
+}
 function SectionCard({ title, children }) {
   return (
     <section>
@@ -195,11 +335,15 @@ function LoginGate({ onLoggedIn }) {
 
 export default function EditorPanel() {
   const { config, dirty, updateLocal, persist, discardLocal, loading: configLoading } = useSiteConfig();
-  const [open, setOpen] = useState(false);
+  const { open, setOpen, setSelectedSection, selectedSection } = useEditorUI();
   const [user, setUser] = useState(undefined); // undefined = checking, null = anonymous
   const [tab, setTab] = useState("Theme");
   const [saveState, setSaveState] = useState("idle"); // idle | saving | saved | error
   const [saveError, setSaveError] = useState(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [componentQuery, setComponentQuery] = useState("");
+  const sectionOrder = resolveSectionOrder(config);
+  const selectedCustom = selectedSection ? config.customSections?.[selectedSection] : null;
 
   const checkAuth = useCallback(async () => {
     try {
@@ -222,13 +366,51 @@ export default function EditorPanel() {
       setOpen(true);
       window.history.replaceState(null, "", "/");
     }
-  }, []);
+  }, [setOpen]);
+
+  const addSectionAtEnd = () => {
+    const custom = createCustomSection();
+    const order = insertSection(sectionOrder, sectionOrder.length - 1, custom.id);
+    updateLocal({
+      homeSectionOrder: order,
+      customSections: { ...(config.customSections || {}), [custom.id]: custom },
+      backgrounds: { [custom.id]: defaultBackgroundForSection(custom.id) },
+    });
+    setSelectedSection(custom.id);
+  };
+
+  const addPlaygroundAtEnd = (playgroundId) => {
+    const section = createPlaygroundSection(playgroundId);
+    const order = insertSection(sectionOrder, sectionOrder.length - 1, section.id);
+    updateLocal({
+      homeSectionOrder: order,
+      customSections: { ...(config.customSections || {}), [section.id]: section },
+      backgrounds: { [section.id]: defaultBackgroundForSection(section.id) },
+    });
+    setSelectedSection(section.id);
+    setPickerOpen(false);
+  };
+
+  const updatePlaygroundConfig = (sectionId, key, value) =>
+    updateLocal({ customSections: { [sectionId]: { config: { [key]: value } } } });
+
+  const filteredComponents = PLAYGROUND_MANIFESTS.filter((m) => {
+    const q = componentQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      m.label.toLowerCase().includes(q) ||
+      m.type.toLowerCase().includes(q) ||
+      (m.description || "").toLowerCase().includes(q)
+    );
+  });
 
   const updateField = (section, key, value) => updateLocal({ [section]: { [key]: value } });
   const updateJourney = (slug, key, value) =>
     updateLocal({ journeys: config.journeys.map((j) => (j.slug === slug ? { ...j, [key]: value } : j)) });
   const updateBackground = (section, key, value) =>
     updateLocal({ backgrounds: { [section]: { [key]: value } } });
+  const updateTextStyle = (key, value) =>
+    updateLocal({ textStyles: { [key]: value } });
 
   const handleSave = async () => {
     setSaveState("saving");
@@ -247,6 +429,7 @@ export default function EditorPanel() {
 
   return (
     <>
+      {pickerOpen && <PlaygroundPicker onSelect={addPlaygroundAtEnd} onClose={() => setPickerOpen(false)} />}
       {/* Always-visible toggle tab */}
       <button
         onClick={() => setOpen((o) => !o)}
@@ -360,6 +543,47 @@ export default function EditorPanel() {
                     </div>
                   ))}
                 </div>
+              )}
+
+              {tab === "Typography" && (
+                <>
+                  <p className="text-sm" style={{ color: C.textMuted }}>
+                    Per-field typography — font family (Wix / Google catalog), size, weight, spacing, color, alignment, and more. Changes preview live.
+                  </p>
+                  {[...new Set(TEXT_FIELD_REGISTRY.map((f) => f.group))].map((group) => (
+                    <SectionCard key={group} title={group}>
+                      {TEXT_FIELD_REGISTRY.filter((f) => f.group === group).map((field) => (
+                        <details
+                          key={field.key}
+                          className="rounded-lg"
+                          style={{ background: C.cardAlt, border: `1px solid ${C.border}` }}
+                        >
+                          <summary
+                            className="cursor-pointer px-3 py-2.5 text-sm list-none"
+                            style={{ color: C.text }}
+                          >
+                            {field.label}
+                          </summary>
+                          <div className="px-3 pb-3">
+                            <TextStyleEditor
+                              styleKey={field.key}
+                              textStyles={config.textStyles}
+                              value={config.textStyles?.[field.key] || {}}
+                              onChange={(v) => updateTextStyle(field.key, v)}
+                              preview={
+                                field.key.includes("title") || field.key.includes("heading") || field.key.includes("line1")
+                                  ? "Return to What Remembers You"
+                                  : field.key.includes("eyebrow")
+                                    ? "Philosophy"
+                                    : "The forest holds what the mind has been avoiding."
+                              }
+                            />
+                          </div>
+                        </details>
+                      ))}
+                    </SectionCard>
+                  ))}
+                </>
               )}
 
               {tab === "Content" && (
@@ -492,12 +716,118 @@ export default function EditorPanel() {
                   </SectionCard>
                 ))}
 
+              {tab === "Sections" && (
+                <>
+                  <p className="text-sm" style={{ color: C.textMuted }}>
+                    Reorder sections on the page using the controls that appear on the left while editing. You can also
+                    adjust order here.
+                  </p>
+                  {sectionOrder.map((sectionKey, index) => (
+                    <div
+                      key={sectionKey}
+                      className="flex items-center justify-between gap-3 rounded-lg p-3"
+                      style={{ background: C.card, border: `1px solid ${C.border}` }}
+                    >
+                      <div>
+                        <p className="text-sm" style={{ color: C.text }}>
+                          {getSectionLabel(sectionKey, config.customSections)}
+                        </p>
+                        <p className="text-[10px] uppercase tracking-wide mt-1" style={{ color: C.textFaint }}>
+                          Position {index + 1}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          disabled={index === 0}
+                          onClick={() =>
+                            updateLocal({ homeSectionOrder: reorderSections(sectionOrder, index, index - 1) })
+                          }
+                          className="rounded px-2 py-1 text-xs disabled:opacity-30"
+                          style={{ background: C.border, color: C.text }}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          disabled={index === sectionOrder.length - 1}
+                          onClick={() =>
+                            updateLocal({ homeSectionOrder: reorderSections(sectionOrder, index, index + 1) })
+                          }
+                          className="rounded px-2 py-1 text-xs disabled:opacity-30"
+                          style={{ background: C.border, color: C.text }}
+                        >
+                          ↓
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addSectionAtEnd}
+                    className="rounded-full py-3 text-[11px] uppercase tracking-wide"
+                    style={{ background: C.accent, color: C.accentText }}
+                  >
+                    Add content section
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPickerOpen(true)}
+                    className="rounded-full py-3 text-[11px] uppercase tracking-wide"
+                    style={{ border: `1px solid ${C.border}`, color: C.textMuted }}
+                  >
+                    Add playground component
+                  </button>
+                </>
+              )}
+
+              {tab === "Components" && (
+                <>
+                  {selectedCustom && isPlaygroundSectionId(selectedSection, config.customSections) && (
+                    <SectionCard title={`Edit: ${selectedCustom.label || selectedCustom.playgroundId}`}>
+                      <PlaygroundConfigEditor
+                        playgroundId={selectedCustom.playgroundId}
+                        config={selectedCustom.config || {}}
+                        onChange={(key, value) => updatePlaygroundConfig(selectedSection, key, value)}
+                      />
+                    </SectionCard>
+                  )}
+                  <input
+                    type="search"
+                    placeholder={`Search ${PLAYGROUND_MANIFESTS.length} components…`}
+                    value={componentQuery}
+                    onChange={(e) => setComponentQuery(e.target.value)}
+                    className="w-full rounded px-3 py-2.5 text-sm outline-none"
+                    style={{ background: C.inputBg, color: C.text, border: `1px solid ${C.border}` }}
+                  />
+                  <p className="text-[10px] uppercase tracking-wide" style={{ color: C.textFaint }}>
+                    {filteredComponents.length} of {PLAYGROUND_MANIFESTS.length} — click to add at page end
+                  </p>
+                  <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto">
+                    {filteredComponents.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => addPlaygroundAtEnd(item.id)}
+                        className="text-left rounded-lg px-3 py-3"
+                        style={{ background: C.card, border: `1px solid ${C.border}`, color: C.text }}
+                      >
+                        <p className="text-sm">{item.label}</p>
+                        <p className="text-[10px] mt-1 uppercase tracking-wide" style={{ color: C.textFaint }}>
+                          {item.type}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
               {tab === "Backgrounds" &&
-                BACKGROUND_SECTIONS.map((sectionKey) => {
-                  const bg = config.backgrounds[sectionKey];
+                sectionOrder.map((sectionKey) => {
+                  const bg = config.backgrounds[sectionKey] || defaultBackgroundForSection(sectionKey);
                   const supported = BACKGROUND_TYPE_SUPPORT[sectionKey] || ["color", "image", "scrub"];
                   return (
-                    <SectionCard key={sectionKey} title={BACKGROUND_LABELS[sectionKey] || sectionKey}>
+                    <SectionCard key={sectionKey} title={BACKGROUND_LABELS[sectionKey] || getSectionLabel(sectionKey, config.customSections)}>
                       <Select
                         label="Type"
                         value={bg.type}
@@ -558,16 +888,29 @@ export default function EditorPanel() {
                           />
                           <label className="block">
                             <span className="block mb-1.5 text-[11px] uppercase tracking-wide" style={{ color: C.textMuted }}>
-                              Scroll distance ({bg.scrubVh ?? 320}vh)
+                              Scroll distance ({bg.scrubVh ?? 320}vh) — section height is 100vh + this value
                             </span>
                             <input
                               type="range"
                               min="100"
-                              max="500"
-                              step="20"
-                              value={bg.scrubVh ?? 320}
+                              max="2000"
+                              step="50"
+                              value={Math.min(bg.scrubVh ?? 320, 2000)}
                               onChange={(e) => updateBackground(sectionKey, "scrubVh", parseInt(e.target.value, 10))}
                               className="w-full"
+                            />
+                            <input
+                              type="number"
+                              min="100"
+                              max="3000"
+                              step="50"
+                              value={bg.scrubVh ?? 320}
+                              onChange={(e) => {
+                                const v = parseInt(e.target.value, 10);
+                                if (!Number.isNaN(v)) updateBackground(sectionKey, "scrubVh", Math.max(100, Math.min(3000, v)));
+                              }}
+                              className="mt-2 w-full rounded border px-2 py-1.5 text-sm"
+                              style={{ borderColor: C.border, background: C.inputBg, color: C.text }}
                             />
                           </label>
                           <label className="block">
@@ -586,6 +929,21 @@ export default function EditorPanel() {
                           </label>
                         </>
                       )}
+
+                      <GradientStripControls
+                        label="Top gradient strip"
+                        position="top"
+                        value={bg.gradientTop}
+                        sectionKey={sectionKey}
+                        onChange={(v) => updateBackground(sectionKey, "gradientTop", v)}
+                      />
+                      <GradientStripControls
+                        label="Bottom gradient strip"
+                        position="bottom"
+                        value={bg.gradientBottom}
+                        sectionKey={sectionKey}
+                        onChange={(v) => updateBackground(sectionKey, "gradientBottom", v)}
+                      />
                     </SectionCard>
                   );
                 })}

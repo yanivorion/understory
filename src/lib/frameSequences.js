@@ -1,7 +1,14 @@
 // Registry of available scroll-scrubbed frame sequences, selectable per
 // section from the editor panel's Backgrounds tab. To add a new sequence,
 // drop numbered frames (frame_0001.<ext>, frame_0002.<ext>, ...) into
-// public/frames/<id>/ and add an entry here.
+// public/frames/<id>/ and add an entry here, or run:
+//   npm run import:video-scrub
+import videoSequences from "./videoFrameSequences.json";
+
+const VIDEO_FRAME_SEQUENCES = Object.fromEntries(
+  videoSequences.map((seq) => [seq.id, seq])
+);
+
 export const FRAME_SEQUENCES = {
   hike: {
     id: "hike",
@@ -51,6 +58,7 @@ export const FRAME_SEQUENCES = {
     frameCount: 187,
     thumbnail: "/frames/plant-jungle/frame_0001.webp",
   },
+  ...VIDEO_FRAME_SEQUENCES,
 };
 
 export const DEFAULT_SEQUENCE_ID = "hike";

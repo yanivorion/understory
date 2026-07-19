@@ -1,4 +1,11 @@
 import { journeys as baseJourneys } from "../data/journeys";
+import {
+  BUILTIN_SECTION_IDS,
+  DEFAULT_HOME_SECTION_ORDER,
+  defaultBackgrounds as buildDefaultBackgrounds,
+  defaultBackgroundForSection,
+} from "./homeSections";
+import { mergeTextStyles } from "./textStyles";
 
 // Mirrors the --color-* custom properties defined in src/index.css /
 // tailwind.config.js. Keys here (camelCase where needed) map 1:1 to the
@@ -72,30 +79,17 @@ export const defaultFooter = {
 };
 
 // Per-section background config, editable from the editor panel's
-// Backgrounds tab. Each value: { type: 'color'|'image'|'scrub', color?,
-// image?, overlay?, sequenceId?, scrubVh?, posterImage? }. sequenceId refers
-// to an entry in src/lib/frameSequences.js. An empty color ("") means "let
-// the section's own default Tailwind class supply the color" — this keeps
-// sections theme-reactive until someone picks an explicit override.
-export const BACKGROUND_SECTIONS = ["hero", "philosophy", "arrival", "recognition", "contact"];
+// Backgrounds tab. Each value: { type, color?, image?, overlay?,
+// sequenceId?, scrubVh?, posterImage?, gradientTop?, gradientBottom? }.
+export const BACKGROUND_SECTIONS = [...BUILTIN_SECTION_IDS];
 
 // Every section supports all three background modes.
 export const BACKGROUND_TYPES = ["color", "image", "scrub"];
-export const BACKGROUND_TYPE_SUPPORT = {
-  hero: BACKGROUND_TYPES,
-  philosophy: BACKGROUND_TYPES,
-  arrival: BACKGROUND_TYPES,
-  recognition: BACKGROUND_TYPES,
-  contact: BACKGROUND_TYPES,
-};
+export const BACKGROUND_TYPE_SUPPORT = Object.fromEntries(
+  BACKGROUND_SECTIONS.map((id) => [id, BACKGROUND_TYPES])
+);
 
-export const defaultBackgrounds = {
-  hero: { type: "scrub", sequenceId: "hike", scrubVh: 320, overlay: 0, posterImage: "/images/home-hero.jpg" },
-  philosophy: { type: "color", color: "" },
-  arrival: { type: "image", image: "/images/home-hero.jpg", overlay: 0 },
-  recognition: { type: "color", color: "" },
-  contact: { type: "color", color: "" },
-};
+export const defaultBackgrounds = buildDefaultBackgrounds();
 
 export const defaultJourneyOverrides = baseJourneys.map((j) => ({
   slug: j.slug,
@@ -117,6 +111,9 @@ export const defaultSiteConfig = {
   footer: defaultFooter,
   journeys: defaultJourneyOverrides,
   backgrounds: defaultBackgrounds,
+  homeSectionOrder: DEFAULT_HOME_SECTION_ORDER,
+  customSections: {},
+  textStyles: {},
 };
 
 export function mergeJourneyOverrides(base, overrides) {
@@ -125,11 +122,41 @@ export function mergeJourneyOverrides(base, overrides) {
   return base.map((j) => ({ ...j, ...(bySlug.get(j.slug) || {}) }));
 }
 
+function mergeGradientPart(basePart, incomingPart) {
+  if (!incomingPart) return basePart;
+  return { ...basePart, ...incomingPart };
+}
+
+function mergeBackgroundEntry(base = defaultBackgroundForSection(), incoming) {
+  if (!incoming) return base;
+  return {
+    ...base,
+    ...incoming,
+    gradientTop: mergeGradientPart(base.gradientTop, incoming.gradientTop),
+    gradientBottom: mergeGradientPart(base.gradientBottom, incoming.gradientBottom),
+  };
+}
+
 function mergeBackgrounds(base, incoming) {
   if (!incoming) return base;
   const merged = { ...base };
-  BACKGROUND_SECTIONS.forEach((key) => {
-    if (incoming[key]) merged[key] = { ...base[key], ...incoming[key] };
+  const keys = new Set([...Object.keys(base), ...Object.keys(incoming)]);
+  keys.forEach((key) => {
+    merged[key] = mergeBackgroundEntry(base[key] || defaultBackgroundForSection(key), incoming[key]);
+  });
+  return merged;
+}
+
+function mergeCustomSections(base, incoming) {
+  if (!incoming) return base;
+  const merged = { ...base };
+  Object.entries(incoming).forEach(([id, section]) => {
+    const prev = base[id] || {};
+    merged[id] = {
+      ...prev,
+      ...section,
+      config: section.config ? { ...(prev.config || {}), ...section.config } : prev.config,
+    };
   });
   return merged;
 }
@@ -153,6 +180,12 @@ export function mergeConfig(base, incoming) {
     footer: { ...base.footer, ...(incoming.footer || {}) },
     journeys: mergeJourneyOverrides(base.journeys, incoming.journeys),
     backgrounds: mergeBackgrounds(base.backgrounds, incoming.backgrounds),
+    homeSectionOrder:
+      incoming.homeSectionOrder && incoming.homeSectionOrder.length
+        ? incoming.homeSectionOrder
+        : base.homeSectionOrder,
+    customSections: mergeCustomSections(base.customSections, incoming.customSections),
+    textStyles: mergeTextStyles(base.textStyles, incoming.textStyles),
   };
 }
 

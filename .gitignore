@@ -25,3 +25,6 @@ base44/.app.jsonc
 *.njsproj
 *.sln
 *.sw?
+
+# Heavy local frame sequences (~2GB) — kept on disk, delivered to prod separately, never in git
+public/frames/

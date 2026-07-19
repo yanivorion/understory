@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useScroll } from "framer-motion";
+import SectionGradientStrips from "./SectionGradientStrips";
 
 /**
  * Reusable scroll-scrubbed frame-sequence background.
@@ -33,6 +34,10 @@ export default function ScrollFrameSequence({
   bgClassName = "bg-ink",
   loadingLabel = "Loading\u2026",
   posterImage,
+  overlay = 0,
+  gradientTop,
+  gradientBottom,
+  sectionId = "hero",
   className = "",
   wrapperClassName = "",
   children,
@@ -175,30 +180,45 @@ export default function ScrollFrameSequence({
   return (
     <section
       ref={containerRef}
-      className={`relative ${className}`}
+      className={`relative overflow-visible ${className}`}
       style={{ height: `calc(100vh + ${scrubVh}vh)` }}
     >
-      <div className={`sticky top-0 h-screen overflow-hidden ${bgClassName} ${wrapperClassName}`}>
+      <div className={`sticky top-0 h-screen overflow-visible ${bgClassName} ${wrapperClassName}`}>
         {posterImage && (
           <img
             src={posterImage}
             alt=""
             aria-hidden="true"
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+            className={`absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-700 ${
               ready ? "opacity-0" : "opacity-100"
             }`}
           />
         )}
-        <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+        <canvas ref={canvasRef} className="absolute inset-0 z-0 h-full w-full" />
+
+        {overlay > 0 && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-[1]"
+            style={{ backgroundColor: `rgb(var(--color-ink) / ${overlay})` }}
+          />
+        )}
 
         {!ready && !posterImage && (
-          <div className={`absolute inset-0 flex items-center justify-center ${bgClassName}`}>
+          <div className={`absolute inset-0 z-[1] flex items-center justify-center ${bgClassName}`}>
             <span className="meta text-paper/50">{loadingLabel}</span>
           </div>
         )}
 
-        <FrameScrollContext.Provider value={{ scrollYProgress, ready }}>{children}</FrameScrollContext.Provider>
+        <div className="absolute inset-0 z-10">
+          <FrameScrollContext.Provider value={{ scrollYProgress, ready }}>{children}</FrameScrollContext.Provider>
+        </div>
       </div>
+
+      <SectionGradientStrips
+        background={{ gradientTop, gradientBottom }}
+        sectionId={sectionId}
+      />
     </section>
   );
 }

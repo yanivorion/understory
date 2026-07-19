@@ -35,7 +35,19 @@
     },
     "backgrounds": {
       "type": "object",
-      "description": "Per-section background config, keyed by section id (hero, philosophy, arrival, recognition, contact). Each value: { type: 'color'|'image'|'scrub', color?, image?, overlay?, sequenceId?, scrubVh?, posterImage? }. sequenceId refers to an entry in src/lib/frameSequences.js."
+      "description": "Per-section background config, keyed by section id. Each value: { type, color?, image?, overlay?, sequenceId?, scrubVh?, posterImage?, gradientTop?, gradientBottom? }. gradientTop/Bottom: { enabled, color, colorEnd, opacity, opacityEnd, height, overlap }."
+    },
+    "homeSectionOrder": {
+      "type": "array",
+      "description": "Ordered list of home page section ids (built-in ids plus custom-* ids)."
+    },
+    "customSections": {
+      "type": "object",
+      "description": "Custom home sections keyed by id. Content bands: { id, type: 'content', eyebrow, heading, body }. Playground: { id, type: 'playground', playgroundId, label, config }."
+    },
+    "textStyles": {
+      "type": "object",
+      "description": "Per-field typography overrides keyed by dot path (e.g. hero.title, philosophy.text). Each value: { fontId, fontSize, fontSizeUnit, fontWeight, fontStyle, lineHeight, letterSpacing, letterSpacingUnit, color, textAlign, textTransform, textDecoration, opacity }."
     },
     "journeys": {
       "type": "array",
