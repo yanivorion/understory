@@ -48,6 +48,19 @@ export const defaultRecognition = {
   award: recognition.award,
 };
 
+// Per-section background config. Matches the current hand-tuned look of
+// each section exactly, so nothing changes visually until edited in
+// /studio → Backgrounds. See ScrubableSection.jsx for the type contract.
+export const BACKGROUND_SECTIONS = ["hero", "philosophy", "recognition", "journeyWidget", "homeContact"];
+
+export const defaultBackgrounds = {
+  hero: { type: "scrub", sequenceId: "ascent", scrubVh: 320, overlay: 0 },
+  philosophy: { type: "image", image: "/images/home-hero.jpg", overlay: 0.8 },
+  recognition: { type: "color", color: "" },
+  journeyWidget: { type: "color", color: "" },
+  homeContact: { type: "color", color: "" },
+};
+
 export const defaultJourneyOverrides = baseJourneys.map((j) => ({
   slug: j.slug,
   title: j.title,
@@ -64,12 +77,22 @@ export const defaultSiteConfig = {
   philosophy: defaultPhilosophy,
   recognition: defaultRecognition,
   journeys: defaultJourneyOverrides,
+  backgrounds: defaultBackgrounds,
 };
 
 export function mergeJourneyOverrides(base, overrides) {
   if (!overrides || !overrides.length) return base;
   const bySlug = new Map(overrides.map((o) => [o.slug, o]));
   return base.map((j) => ({ ...j, ...(bySlug.get(j.slug) || {}) }));
+}
+
+function mergeBackgrounds(base, incoming) {
+  if (!incoming) return base;
+  const merged = { ...base };
+  BACKGROUND_SECTIONS.forEach((key) => {
+    if (incoming[key]) merged[key] = { ...base[key], ...incoming[key] };
+  });
+  return merged;
 }
 
 export function mergeConfig(base, incoming) {
@@ -80,6 +103,7 @@ export function mergeConfig(base, incoming) {
     philosophy: { ...base.philosophy, ...(incoming.philosophy || {}) },
     recognition: { ...base.recognition, ...(incoming.recognition || {}) },
     journeys: mergeJourneyOverrides(base.journeys, incoming.journeys),
+    backgrounds: mergeBackgrounds(base.backgrounds, incoming.backgrounds),
   };
 }
 

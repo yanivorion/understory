@@ -27,6 +27,10 @@
       "type": "object",
       "description": "Press/award strip: press (array of strings), award (string)"
     },
+    "backgrounds": {
+      "type": "object",
+      "description": "Per-section background config, keyed by section id (hero, philosophy, recognition, journeyWidget, homeContact). Each value: { type: 'color'|'image'|'scrub', color?, image?, overlay?, sequenceId?, scrubVh? }. sequenceId refers to an entry in src/lib/frameSequences.js."
+    },
     "journeys": {
       "type": "array",
       "description": "Overrides for the four journey cards, matched by slug: slug, title, tagline, duration, location, sound, description",
