@@ -57,13 +57,12 @@ touching component code.
 
 The homepage hero (`src/components/Hero.jsx`) is a canvas-based scroll-scrubber, not a
 video or a single static image. As the user scrolls through a pinned ~420vh section, the
-scroll position is mapped to one of 360 JPEG-derived WebP frames (a 15s hiking clip,
-sampled at its native ~24fps) and drawn onto a `<canvas>` with cover-fit cropping.
+scroll position is mapped to one of 289 WebP frames (a single continuous ~12s camera
+move, sampled at its native 24fps) and drawn onto a `<canvas>` with cover-fit cropping.
 
-- Frames live in `public/frames/hike/frame_0001.webp` … `frame_0360.webp` (960×540,
-  ~22MB total — downsized/recompressed from an original 75MB 1280×720 JPEG sequence).
-- `public/frames/hike/manifest.json` documents the original source clip and extraction
-  settings.
+- Frames live in `public/frames/ascent/frame_0001.webp` … `frame_0289.webp` (1280×720,
+  ~9.5MB total — downsized/recompressed from an original 1920×1080 JPEG sequence).
+- `public/frames/ascent/manifest.json` documents the source clip and extraction settings.
 - The first ~28 frames load eagerly; the rest stream in with limited concurrency in the
   background. Scrubbing always draws the nearest already-loaded frame, so scrolling
   ahead of the network never shows a blank canvas.
@@ -71,5 +70,5 @@ sampled at its native ~24fps) and drawn onto a `<canvas>` with cover-fit croppin
   background of the "Philosophy" section (`src/components/Philosophy.jsx`).
 
 To swap in a different clip: re-extract frames with ffmpeg, convert to WebP (`cwebp`),
-drop them in `public/frames/hike/` following the same `frame_%04d.webp` naming, and
-update `FRAME_COUNT` in `Hero.jsx` if the count changes.
+drop them in `public/frames/<name>/` following the `frame_%04d.webp` naming, and update
+`FRAME_COUNT` / `FRAME_PATH` at the top of `Hero.jsx`.

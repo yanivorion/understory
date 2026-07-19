@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
 
-const FRAME_COUNT = 360;
-const FRAME_PATH = "/frames/hike/frame_";
+const FRAME_COUNT = 289;
+const FRAME_PATH = "/frames/ascent/frame_";
 const SCRUB_VH = 320;
 
 function frameUrl(index) {
@@ -145,7 +145,7 @@ export default function Hero() {
 
         {!ready && (
           <div className="absolute inset-0 flex items-center justify-center bg-forest-deep">
-            <span className="meta-row text-paper/50">Entering the trail&hellip;</span>
+            <span className="meta-row text-paper/50">Entering the Understory&hellip;</span>
           </div>
         )}
 
@@ -173,7 +173,7 @@ export default function Hero() {
           style={{ opacity: textOpacity }}
           className="absolute bottom-9 inset-x-0 flex flex-col items-center gap-3 z-10"
         >
-          <span className="meta-row text-paper/55">Scroll to Begin the Walk</span>
+          <span className="meta-row text-paper/55">Scroll to Begin the Ascent</span>
           <span className="h-10 w-px bg-paper/35 relative overflow-hidden">
             <span className="absolute top-0 left-0 h-full w-full bg-paper animate-[pulse_2.6s_ease-in-out_infinite]" />
           </span>
