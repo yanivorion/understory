@@ -7,7 +7,8 @@ export default function Hero() {
 
   const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
   const imageScale = useTransform(scrollYProgress, [0, 1], [1.06, 1.22]);
-  const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.32, 0.72]);
+  const vignetteY = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
+  const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.32, 0.85]);
   const textY = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
   const textOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
 
@@ -21,8 +22,9 @@ export default function Hero() {
         />
       </motion.div>
 
+      <motion.div style={{ y: vignetteY }} className="absolute inset-0 bg-gradient-to-b from-forest-deep/45 via-transparent to-transparent" />
       <motion.div style={{ opacity: overlayOpacity }} className="absolute inset-0 bg-forest-deep" />
-      <div className="absolute inset-0 bg-gradient-to-b from-forest-deep/55 via-transparent to-forest-deep/70" />
+      <div className="absolute inset-0 bg-gradient-to-b from-forest-deep/60 via-transparent to-forest-deep" />
       <div className="grain" />
 
       <motion.div
