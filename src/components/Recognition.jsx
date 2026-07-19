@@ -2,9 +2,11 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Reveal from "./Reveal";
 import SectionBlend from "./SectionBlend";
-import { recognition } from "../lib/content";
+import { useSiteConfig } from "../lib/ConfigProvider";
 
 export default function Recognition() {
+  const { config } = useSiteConfig();
+  const recognition = config.recognition;
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const pressX = useTransform(scrollYProgress, [0, 1], ["-3%", "3%"]);

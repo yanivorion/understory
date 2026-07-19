@@ -1,0 +1,10 @@
+{
+  "name": "Understory",
+  "description": "Immersive booking site for a nature and sound therapy studio",
+  "site": {
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "serveCommand": "npm run dev",
+    "outputDirectory": "./dist"
+  }
+}

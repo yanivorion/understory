@@ -2,9 +2,11 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Reveal from "./Reveal";
 import SectionBlend from "./SectionBlend";
-import { philosophyText } from "../lib/content";
+import { useSiteConfig } from "../lib/ConfigProvider";
 
 export default function Philosophy() {
+  const { config } = useSiteConfig();
+  const philosophy = config.philosophy;
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const imageY = useTransform(scrollYProgress, [0, 1], ["-9%", "9%"]);
@@ -19,7 +21,7 @@ export default function Philosophy() {
     >
       <motion.div style={{ y: imageY, scale: imageScale }} className="absolute inset-0">
         <img
-          src="/images/home-hero.jpg"
+          src={philosophy.backgroundImage}
           alt=""
           aria-hidden="true"
           className="h-full w-full object-cover"
@@ -44,11 +46,11 @@ export default function Philosophy() {
 
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         <Reveal>
-          <span className="eyebrow text-clay-soft mb-9 block">Philosophy</span>
+          <span className="eyebrow text-clay-soft mb-9 block">{philosophy.eyebrow}</span>
         </Reveal>
         <Reveal delay={120}>
           <p className="font-display text-[clamp(1.7rem,3.6vw,2.9rem)] leading-[1.35] tracking-[0.008em]">
-            {philosophyText}
+            {philosophy.text}
           </p>
         </Reveal>
       </div>

@@ -1,9 +1,9 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { journeys } from "../lib/content";
 import Reveal from "./Reveal";
 import SectionBlend from "./SectionBlend";
+import { useJourneys } from "../lib/ConfigProvider";
 
 function JourneyTile({ journey, index }) {
   const ref = useRef(null);
@@ -44,6 +44,7 @@ function JourneyTile({ journey, index }) {
 }
 
 export default function JourneyWidget() {
+  const journeys = useJourneys();
   return (
     <section className="relative bg-parchment px-6 md:px-10 pt-40 md:pt-56 pb-28 md:pb-36 overflow-hidden">
       <SectionBlend from="var(--color-forest-deep)" height="46vh" />

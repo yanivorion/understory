@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { journeys, getJourneyBySlug } from "../lib/content";
+import { useJourneys } from "../lib/ConfigProvider";
 import MetaPanel from "../components/MetaPanel";
 import Reveal from "../components/Reveal";
 import Gutter from "../components/Gutter";
@@ -41,7 +41,8 @@ function JourneyHero({ journey }) {
 
 export default function Journey() {
   const { slug } = useParams();
-  const journey = getJourneyBySlug(slug);
+  const journeys = useJourneys();
+  const journey = journeys.find((j) => j.slug === slug);
 
   useEffect(() => {
     window.scrollTo(0, 0);

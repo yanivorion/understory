@@ -1,0 +1,53 @@
+{
+  // Singleton site-content config for the local (Cursor) build of Understory.
+  // Kept separate from the "SiteConfig" entity used by the other build on
+  // this same Base44 app, since the two frontends have different section
+  // structure and content shape.
+  //
+  // The public site reads this anonymously (RLS: read=true) and falls back
+  // to the hardcoded defaults in src/lib/siteConfigDefaults.js if no record
+  // exists yet or the request fails. Only the app admin can write, via the
+  // /studio dashboard.
+  "name": "CursorSiteConfig",
+  "type": "object",
+  "properties": {
+    "theme": {
+      "type": "object",
+      "description": "Palette color overrides, hex strings keyed by: parchment, parchmentDeep, paper, ink, inkSoft, inkFaint, forest, forestDeep, moss, clay, claySoft"
+    },
+    "hero": {
+      "type": "object",
+      "description": "Home hero copy: eyebrow, titleLine1, titleLine2, tagline"
+    },
+    "philosophy": {
+      "type": "object",
+      "description": "Philosophy section: eyebrow, text, backgroundImage (URL)"
+    },
+    "recognition": {
+      "type": "object",
+      "description": "Press/award strip: press (array of strings), award (string)"
+    },
+    "journeys": {
+      "type": "array",
+      "description": "Overrides for the four journey cards, matched by slug: slug, title, tagline, duration, location, sound, description",
+      "items": {
+        "type": "object",
+        "properties": {
+          "slug": { "type": "string" },
+          "title": { "type": "string" },
+          "tagline": { "type": "string" },
+          "duration": { "type": "string" },
+          "location": { "type": "string" },
+          "sound": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    }
+  },
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": true,
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

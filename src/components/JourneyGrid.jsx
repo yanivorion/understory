@@ -1,8 +1,9 @@
 import Reveal from "./Reveal";
 import JourneyCard from "./JourneyCard";
-import { journeys } from "../lib/content";
+import { useJourneys } from "../lib/ConfigProvider";
 
 export default function JourneyGrid() {
+  const journeys = useJourneys();
   const [lead, second, third, fourth] = journeys;
 
   return (
