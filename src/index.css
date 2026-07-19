@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  background-color: #141009;
+  color: #ece3d3;
+  font-family: 'Product Sans', 'Google Sans', system-ui, sans-serif;
+  font-weight: 400;
+  overflow-x: hidden;
+}
+
+/* Merriweather display; Google Sans (Product Sans) for labels + running text */
+@layer components {
+  .display {
+    font-family: 'Merriweather', Georgia, serif;
+    font-weight: 400;
+    line-height: 1.04;
+    letter-spacing: 0.005em;
+  }
+  .meta {
+    font-family: 'Product Sans', 'Google Sans', system-ui, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+  }
+  .eyebrow {
+    font-family: 'Product Sans', 'Google Sans', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+  .prose-serif p {
+    font-weight: 300;
+    line-height: 1.7;
+  }
+  .hairline {
+    background-color: rgba(202, 191, 171, 0.22);
+  }
+}
+
+/* Slow, breathing hover for imagery */
+.img-breathe {
+  transition: transform 1.6s cubic-bezier(0.22, 0.61, 0.36, 1), filter 1.2s ease;
+  will-change: transform;
+}
+.group:hover .img-breathe {
+  transform: scale(1.04);
+}
+
+/* Ken Burns drift for the hero still (stands in for scroll video) */
+@keyframes kenburns {
+  0%   { transform: scale(1.08) translate3d(0, 0, 0); }
+  100% { transform: scale(1.2) translate3d(-2%, -3%, 0); }
+}
+.kenburns {
+  animation: kenburns 34s ease-out forwards;
+}
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #141009; }
+::-webkit-scrollbar-thumb { background: #3a2f21; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #5c6650; }
+
+::selection {
+  background: rgba(201, 154, 91, 0.28);
+  color: #f3ecdd;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kenburns { animation: none; }
+  html { scroll-behavior: auto; }
+}
