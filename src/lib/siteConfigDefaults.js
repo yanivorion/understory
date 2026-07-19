@@ -71,6 +71,32 @@ export const defaultFooter = {
   bottomNote: "Return to what remembers you",
 };
 
+// Per-section background config, editable from the editor panel's
+// Backgrounds tab. Each value: { type: 'color'|'image'|'scrub', color?,
+// image?, overlay?, sequenceId?, scrubVh?, posterImage? }. sequenceId refers
+// to an entry in src/lib/frameSequences.js. An empty color ("") means "let
+// the section's own default Tailwind class supply the color" — this keeps
+// sections theme-reactive until someone picks an explicit override.
+export const BACKGROUND_SECTIONS = ["hero", "philosophy", "arrival", "recognition", "contact"];
+
+// Every section supports all three background modes.
+export const BACKGROUND_TYPES = ["color", "image", "scrub"];
+export const BACKGROUND_TYPE_SUPPORT = {
+  hero: BACKGROUND_TYPES,
+  philosophy: BACKGROUND_TYPES,
+  arrival: BACKGROUND_TYPES,
+  recognition: BACKGROUND_TYPES,
+  contact: BACKGROUND_TYPES,
+};
+
+export const defaultBackgrounds = {
+  hero: { type: "scrub", sequenceId: "hike", scrubVh: 320, overlay: 0, posterImage: "/images/home-hero.jpg" },
+  philosophy: { type: "color", color: "" },
+  arrival: { type: "image", image: "/images/home-hero.jpg", overlay: 0 },
+  recognition: { type: "color", color: "" },
+  contact: { type: "color", color: "" },
+};
+
 export const defaultJourneyOverrides = baseJourneys.map((j) => ({
   slug: j.slug,
   title: j.title,
@@ -90,12 +116,22 @@ export const defaultSiteConfig = {
   contact: defaultContact,
   footer: defaultFooter,
   journeys: defaultJourneyOverrides,
+  backgrounds: defaultBackgrounds,
 };
 
 export function mergeJourneyOverrides(base, overrides) {
   if (!overrides || !overrides.length) return base;
   const bySlug = new Map(overrides.map((o) => [o.slug, o]));
   return base.map((j) => ({ ...j, ...(bySlug.get(j.slug) || {}) }));
+}
+
+function mergeBackgrounds(base, incoming) {
+  if (!incoming) return base;
+  const merged = { ...base };
+  BACKGROUND_SECTIONS.forEach((key) => {
+    if (incoming[key]) merged[key] = { ...base[key], ...incoming[key] };
+  });
+  return merged;
 }
 
 export function mergeConfig(base, incoming) {
@@ -116,6 +152,7 @@ export function mergeConfig(base, incoming) {
     contact: { ...base.contact, ...(incoming.contact || {}) },
     footer: { ...base.footer, ...(incoming.footer || {}) },
     journeys: mergeJourneyOverrides(base.journeys, incoming.journeys),
+    backgrounds: mergeBackgrounds(base.backgrounds, incoming.backgrounds),
   };
 }
 

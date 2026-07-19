@@ -33,6 +33,10 @@
       "type": "object",
       "description": "Footer copy: { tagline, bottomNote }."
     },
+    "backgrounds": {
+      "type": "object",
+      "description": "Per-section background config, keyed by section id (hero, philosophy, arrival, recognition, contact). Each value: { type: 'color'|'image'|'scrub', color?, image?, overlay?, sequenceId?, scrubVh?, posterImage? }. sequenceId refers to an entry in src/lib/frameSequences.js."
+    },
     "journeys": {
       "type": "array",
       "description": "Overrides for the four journey cards, matched by slug against src/data/journeys.js. Images and the Entry/Immersion/Emergence arc stay static; only these summary fields are editable.",

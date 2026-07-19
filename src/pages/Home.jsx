@@ -5,7 +5,8 @@ import Reveal from '../components/Reveal'
 import ContactForm from '../components/ContactForm'
 import FrameSequenceHero from '../components/FrameSequenceHero'
 import ScrollText from '../components/ScrollText'
-import ParallaxBand from '../components/ParallaxBand'
+import SectionBackground from '../components/SectionBackground'
+import { useFrameScroll } from '../components/ScrollFrameSequence'
 import TryThis from '../components/TryThis'
 import { useJourneys, useSiteConfig } from '../lib/ConfigProvider'
 
@@ -55,9 +56,32 @@ function JourneyWidget() {
   )
 }
 
-function PhilosophyStatement() {
-  const { config } = useSiteConfig()
-  const { eyebrow, lead, text } = config.philosophy
+const philosophyTextClass =
+  'text-3xl font-light leading-[1.24] text-white md:text-5xl md:leading-[1.2] lg:text-[3.6rem] lg:leading-[1.16]'
+
+function PhilosophyText({ eyebrow, lead, text, progress }) {
+  return (
+    <div className="w-full px-6 md:px-14">
+      <p className="eyebrow mb-10 text-clay">{eyebrow}</p>
+      <ScrollText lead={lead} text={text} progress={progress} start={0.04} end={0.92} className={philosophyTextClass} />
+    </div>
+  )
+}
+
+// Scrub mode: the frame sequence's own pinned scroll container drives the
+// typing reveal, via useFrameScroll() instead of the manual rect-tracking
+// used by the color/image variants below.
+function PhilosophyScrubContent({ eyebrow, lead, text }) {
+  const { scrollYProgress } = useFrameScroll()
+  return (
+    <div className="relative z-10 flex h-full items-center overflow-hidden">
+      <PhilosophyText eyebrow={eyebrow} lead={lead} text={text} progress={scrollYProgress} />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[30vh] bg-gradient-to-b from-transparent to-ink" />
+    </div>
+  )
+}
+
+function PhilosophyStatic({ bg, eyebrow, lead, text }) {
   const ref = useRef(null)
   // Pin progress: 0 the instant the section reaches the top of the fold (0px),
   // 1 when the pin ends. The typing is driven entirely by this — so it does not
@@ -92,22 +116,20 @@ function PhilosophyStatement() {
   }, [progress])
 
   return (
-    <section ref={ref} className="bg-bark md:h-[260vh]">
+    <section ref={ref} className="relative overflow-hidden md:h-[260vh]">
+      {bg.type === 'image' && bg.image ? (
+        <div className="absolute inset-0">
+          <img src={bg.image} alt="" aria-hidden="true" className="h-full w-full object-cover" />
+          {bg.overlay > 0 && (
+            <div aria-hidden="true" className="absolute inset-0 bg-ink" style={{ opacity: bg.overlay }} />
+          )}
+        </div>
+      ) : (
+        <div className="absolute inset-0 bg-bark" style={bg.color ? { backgroundColor: bg.color } : undefined} />
+      )}
       {/* Pinned 100vh stage — typing starts only once this reaches top:0 */}
       <div className="sticky top-0 flex min-h-screen items-center overflow-hidden py-24 md:h-screen md:py-0">
-        {/* coast to coast — full-bleed statement */}
-        <div className="w-full px-6 md:px-14">
-          <p className="eyebrow mb-10 text-clay">{eyebrow}</p>
-          <ScrollText
-            lead={lead}
-            text={text}
-            progress={progress}
-            start={0.04}
-            end={0.92}
-            className="text-3xl font-light leading-[1.24] text-white md:text-5xl md:leading-[1.2] lg:text-[3.6rem] lg:leading-[1.16]"
-          />
-        </div>
-
+        <PhilosophyText eyebrow={eyebrow} lead={lead} text={text} progress={progress} />
         {/* Bottom fade — the green dissolves into the section below */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[30vh] bg-gradient-to-b from-transparent to-ink" />
       </div>
@@ -115,12 +137,29 @@ function PhilosophyStatement() {
   )
 }
 
+function PhilosophyStatement() {
+  const { config } = useSiteConfig()
+  const { eyebrow, lead, text } = config.philosophy
+  const bg = config.backgrounds.philosophy
+
+  if (bg.type === 'scrub') {
+    return (
+      <SectionBackground background={bg} className="bg-bark" loadingLabel="Loading\u2026">
+        <PhilosophyScrubContent eyebrow={eyebrow} lead={lead} text={text} />
+      </SectionBackground>
+    )
+  }
+
+  return <PhilosophyStatic bg={bg} eyebrow={eyebrow} lead={lead} text={text} />
+}
+
 function Recognition() {
   const { config } = useSiteConfig()
   const { eyebrow, items, award } = config.recognition
+  const bg = config.backgrounds.recognition
   return (
-    <section className="bg-ink py-24">
-      <div className="mx-auto max-w-container px-6 md:px-10">
+    <SectionBackground background={bg} className="bg-ink py-24" loadingLabel="Loading\u2026">
+      <div className="relative z-10 mx-auto max-w-container px-6 md:px-10">
         <Reveal className="text-center">
           <p className="eyebrow text-mist">{eyebrow}</p>
           <div className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-10 gap-y-6">
@@ -135,16 +174,17 @@ function Recognition() {
           </p>
         </Reveal>
       </div>
-    </section>
+    </SectionBackground>
   )
 }
 
 function ContactBand() {
   const { config } = useSiteConfig()
   const { eyebrow, heading, blurb, email, phone } = config.contact
+  const bg = config.backgrounds.contact
   return (
-    <section id="begin" className="bg-parch py-28 md:py-40">
-      <div className="mx-auto max-w-container px-6 md:px-10">
+    <SectionBackground background={bg} className="bg-parch py-28 md:py-40" loadingLabel="Loading\u2026">
+      <div id="begin" className="relative z-10 mx-auto max-w-container px-6 md:px-10">
         <div className="grid gap-16 md:grid-cols-[1fr_1.1fr]">
           <Reveal>
             <p className="eyebrow text-bark">{eyebrow}</p>
@@ -162,22 +202,28 @@ function ContactBand() {
           </Reveal>
         </div>
       </div>
-    </section>
+    </SectionBackground>
   )
 }
 
 function Arrival() {
   const { config } = useSiteConfig()
   const { eyebrow, line1, line2 } = config.arrival
+  const bg = config.backgrounds.arrival
   return (
-    <ParallaxBand eyebrow={eyebrow}>
-      <p className="display mt-6 max-w-3xl text-4xl leading-tight text-paper md:text-6xl">
-        {line1}
-      </p>
-      <p className="prose-serif mt-6 max-w-md text-fog/85">
-        <span className="font-light">{line2}</span>
-      </p>
-    </ParallaxBand>
+    <SectionBackground
+      background={bg}
+      className="relative h-[85vh] w-full bg-ink md:h-screen"
+      loadingLabel="Loading\u2026"
+    >
+      <div className="relative z-10 mx-auto flex h-full max-w-container flex-col items-center justify-center px-6 text-center md:px-10">
+        {eyebrow && <p className="eyebrow text-amber/90">{eyebrow}</p>}
+        <p className="display mt-6 max-w-3xl text-4xl leading-tight text-paper md:text-6xl">{line1}</p>
+        <p className="prose-serif mt-6 max-w-md text-fog/85">
+          <span className="font-light">{line2}</span>
+        </p>
+      </div>
+    </SectionBackground>
   )
 }
 

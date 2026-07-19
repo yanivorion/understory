@@ -1,0 +1,12 @@
+{
+  "source": "magnific_single-continuous-unbroke_mCoWpxshJQ.mp4",
+  "frameCount": 289,
+  "width": 1920,
+  "height": 1080,
+  "fps": 24,
+  "duration": 12.04,
+  "extension": "webp",
+  "pattern": "frame_%04d.webp",
+  "path": "frames/ascent/",
+  "notes": "Single continuous camera move from a foggy pine grove at golden hour up to a stacked stone cairn on a summit outcrop. Native 1920x1080 resolution, recompressed to WebP q85 for sharper detail (~25MB total, up from a 1280x720 q72 pass at ~9.5MB)."
+}
