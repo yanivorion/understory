@@ -1,0 +1,186 @@
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useScroll } from "framer-motion";
+
+/**
+ * Reusable scroll-scrubbed frame-sequence background.
+ *
+ * Draws a numbered sequence of WebP frames onto a full-bleed <canvas> and
+ * maps scroll progress through the section to a frame index, the same way
+ * Hero.jsx originally worked. Any section can drop this in with its own
+ * frame set to get the same "video controlled by scroll" effect.
+ *
+ * Overlay content (text, scrims, gradients, etc.) is passed as `children`
+ * and can read scroll progress / readiness via the `useFrameScroll()` hook
+ * — this keeps hook usage inside real components instead of render props.
+ */
+
+const FrameScrollContext = createContext(null);
+
+export function useFrameScroll() {
+  const ctx = useContext(FrameScrollContext);
+  if (!ctx) {
+    throw new Error("useFrameScroll must be used inside a <ScrollFrameSequence>");
+  }
+  return ctx;
+}
+
+export default function ScrollFrameSequence({
+  frameCount,
+  framePath,
+  scrubVh = 320,
+  eagerCount = 28,
+  workerCount = 5,
+  bgClassName = "bg-forest-deep",
+  loadingLabel = "Loading\u2026",
+  className = "",
+  wrapperClassName = "",
+  children,
+}) {
+  const containerRef = useRef(null);
+  const canvasRef = useRef(null);
+  const imagesRef = useRef(new Array(frameCount));
+  const loadedRef = useRef(new Array(frameCount).fill(false));
+  const lastDrawnRef = useRef(-1);
+  const [ready, setReady] = useState(false);
+
+  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
+
+  const frameUrl = useCallback((index) => `${framePath}${String(index + 1).padStart(4, "0")}.webp`, [framePath]);
+
+  const drawFrame = useCallback(
+    (rawIndex) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const total = frameCount;
+      let target = Math.round(rawIndex);
+      target = Math.max(0, Math.min(total - 1, target));
+
+      let drawIndex = target;
+      if (!loadedRef.current[drawIndex]) {
+        let found = -1;
+        for (let d = 1; d <= total; d++) {
+          const before = target - d;
+          const after = target + d;
+          if (before >= 0 && loadedRef.current[before]) {
+            found = before;
+            break;
+          }
+          if (after < total && loadedRef.current[after]) {
+            found = after;
+            break;
+          }
+        }
+        if (found === -1) return;
+        drawIndex = found;
+      }
+
+      if (drawIndex === lastDrawnRef.current) return;
+      const img = imagesRef.current[drawIndex];
+      if (!img) return;
+
+      const ctx = canvas.getContext("2d");
+      const cw = canvas.width;
+      const ch = canvas.height;
+      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      const dw = img.naturalWidth * scale;
+      const dh = img.naturalHeight * scale;
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+      lastDrawnRef.current = drawIndex;
+    },
+    [frameCount]
+  );
+
+  useEffect(() => {
+    return scrollYProgress.on("change", (v) => {
+      drawFrame(v * (frameCount - 1));
+    });
+  }, [scrollYProgress, drawFrame, frameCount]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadOne = (i) =>
+      new Promise((resolve) => {
+        const img = new Image();
+        img.decoding = "async";
+        img.onload = () => {
+          if (cancelled) return resolve();
+          imagesRef.current[i] = img;
+          loadedRef.current[i] = true;
+          if (i === 0) {
+            setReady(true);
+            drawFrame(0);
+          } else if (lastDrawnRef.current === -1 || Math.abs(i - Math.round(scrollYProgress.get() * (frameCount - 1))) < 3) {
+            drawFrame(scrollYProgress.get() * (frameCount - 1));
+          }
+          resolve();
+        };
+        img.onerror = () => resolve();
+        img.src = frameUrl(i);
+      });
+
+    async function run() {
+      const eager = Math.min(eagerCount, frameCount);
+      for (let i = 0; i < eager; i++) {
+        if (cancelled) return;
+        await loadOne(i);
+      }
+      const rest = [];
+      for (let i = eager; i < frameCount; i++) rest.push(i);
+      let cursor = 0;
+      const worker = async () => {
+        while (cursor < rest.length) {
+          const idx = rest[cursor++];
+          if (cancelled) return;
+          await loadOne(idx);
+        }
+      };
+      await Promise.all(new Array(workerCount).fill(0).map(worker));
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [frameCount, framePath]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = canvas.clientWidth || window.innerWidth;
+      const h = canvas.clientHeight || window.innerHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      lastDrawnRef.current = -1;
+      drawFrame(scrollYProgress.get() * (frameCount - 1));
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawFrame]);
+
+  return (
+    <section
+      ref={containerRef}
+      className={`relative ${className}`}
+      style={{ height: `calc(100vh + ${scrubVh}vh)` }}
+    >
+      <div className={`sticky top-0 h-screen overflow-hidden ${bgClassName} ${wrapperClassName}`}>
+        <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+
+        {!ready && (
+          <div className={`absolute inset-0 flex items-center justify-center ${bgClassName}`}>
+            <span className="meta-row text-paper/50">{loadingLabel}</span>
+          </div>
+        )}
+
+        <FrameScrollContext.Provider value={{ scrollYProgress, ready }}>{children}</FrameScrollContext.Provider>
+      </div>
+    </section>
+  );
+}
