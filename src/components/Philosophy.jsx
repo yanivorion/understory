@@ -27,7 +27,10 @@ export default function Philosophy() {
       </motion.div>
       <div className="absolute inset-0 bg-forest-deep/80" />
 
-      <SectionBlend from="var(--color-parchment)" height="40vh" />
+      {/* top seam now meets the Hero, which ends on forest-deep — keep it green so there's no cream strip */}
+      <SectionBlend from="var(--color-forest-deep)" height="40vh" />
+      {/* deep-green vignette melting the section's bottom edge into the Journey Widget below */}
+      <SectionBlend from="#041f0a" position="bottom" height="42vh" />
 
       <motion.span
         aria-hidden="true"

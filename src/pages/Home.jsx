@@ -8,8 +8,8 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <JourneyWidget />
       <Philosophy />
+      <JourneyWidget />
       <Recognition />
       <HomeContact />
     </>

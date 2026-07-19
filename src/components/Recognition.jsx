@@ -12,7 +12,8 @@ export default function Recognition() {
 
   return (
     <section ref={ref} className="relative bg-parchment px-6 md:px-10 pt-32 md:pt-44 pb-24 md:pb-32 overflow-hidden">
-      <SectionBlend from="var(--color-forest)" height="34vh" />
+      {/* now follows the parchment Journey Widget — keep the seam invisible */}
+      <SectionBlend from="var(--color-parchment)" height="34vh" />
 
       <div className="relative z-10 max-w-[1400px] mx-auto">
         <Reveal className="border-b border-line pb-10 md:pb-12 flex flex-col md:flex-row md:items-center md:justify-between gap-8">

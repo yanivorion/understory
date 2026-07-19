@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
-@import "@fontsource/fraunces/400.css";
-@import "@fontsource/fraunces/400-italic.css";
-@import "@fontsource/fraunces/500.css";
-@import "@fontsource/fraunces/800.css";
+@import "@fontsource/merriweather/300.css";
+@import "@fontsource/merriweather/400.css";
+@import "@fontsource/merriweather/700.css";
+@import "@fontsource/merriweather/800.css";
+@import "@fontsource/merriweather/900.css";
+@import "@fontsource/google-sans/400.css";
+@import "@fontsource/google-sans/400-italic.css";
+@import "@fontsource/google-sans/500.css";
+@import "@fontsource/google-sans/600.css";
+@import "@fontsource/google-sans/700.css";
 @import "@fontsource/ibm-plex-mono/400.css";
 @import "@fontsource/ibm-plex-mono/500.css";
 
@@ -24,8 +30,8 @@
   --color-line-dark: rgba(241, 234, 217, 0.22);
   --color-line-dark-soft: rgba(241, 234, 217, 0.12);
 
-  --font-display: "Fraunces", "Iowan Old Style", serif;
-  --font-body: "Fraunces", "Iowan Old Style", serif;
+  --font-display: "Merriweather", "Iowan Old Style", serif;
+  --font-body: "Google Sans", "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", "Space Mono", monospace;
 
   --ease-understory: cubic-bezier(0.22, 1, 0.36, 1);
@@ -69,17 +75,17 @@ body {
 }
 
 .meta-row {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .eyebrow {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .hairline {
