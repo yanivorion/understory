@@ -1,15 +1,17 @@
 import { Link } from 'react-router-dom'
+import { useSiteConfig } from '../lib/ConfigProvider'
 
 export default function Footer() {
+  const { config } = useSiteConfig()
+  const { tagline, bottomNote } = config.footer
+  const { email, phone, addressLine1, addressLine2 } = config.contact
   return (
     <footer className="border-t border-paper/10 bg-ink">
       <div className="mx-auto max-w-container px-6 py-20 md:px-10">
         <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <p className="display text-3xl text-paper">Understory</p>
-            <p className="prose-serif mt-5 max-w-sm text-fog/70">
-              Guided journeys where nature and sound meet the self. Not an escape — an arrival.
-            </p>
+            <p className="prose-serif mt-5 max-w-sm text-fog/70">{tagline}</p>
           </div>
 
           <div>
@@ -33,16 +35,16 @@ export default function Footer() {
           <div>
             <p className="eyebrow text-mist">Reach</p>
             <ul className="mt-5 space-y-3 meta text-fog/70">
-              <li>500 Terry Francine St</li>
-              <li>San Francisco, CA 94158</li>
+              <li>{addressLine1}</li>
+              <li>{addressLine2}</li>
               <li className="pt-2">
-                <a href="tel:1234567890" className="transition-colors hover:text-amber">
-                  123-456-7890
+                <a href={`tel:${phone.replace(/[^0-9+]/g, '')}`} className="transition-colors hover:text-amber">
+                  {phone}
                 </a>
               </li>
               <li>
-                <a href="mailto:info@mysite.com" className="transition-colors hover:text-amber">
-                  info@mysite.com
+                <a href={`mailto:${email}`} className="transition-colors hover:text-amber">
+                  {email}
                 </a>
               </li>
             </ul>
@@ -51,7 +53,7 @@ export default function Footer() {
 
         <div className="mt-16 flex flex-col gap-4 border-t border-paper/10 pt-8 md:flex-row md:items-center md:justify-between">
           <p className="meta text-mist/60">© {new Date().getFullYear()} Understory</p>
-          <p className="meta text-mist/60">Return to what remembers you</p>
+          <p className="meta text-mist/60">{bottomNote}</p>
         </div>
       </div>
     </footer>

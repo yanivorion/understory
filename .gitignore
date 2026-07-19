@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Base44 app link (contains the app id — local machine config, not shared)
+base44/.app.jsonc
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

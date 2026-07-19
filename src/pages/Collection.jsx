@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import Reveal from '../components/Reveal'
 import MetaPanel from '../components/MetaPanel'
-import { journeys } from '../data/journeys'
+import { useJourneys } from '../lib/ConfigProvider'
 
 function CardImage({ j, ratio }) {
   return (
@@ -25,6 +25,7 @@ function CardImage({ j, ratio }) {
 }
 
 export default function Collection() {
+  const journeys = useJourneys()
   const [lead, sq1, sq2, wide] = journeys
 
   return (

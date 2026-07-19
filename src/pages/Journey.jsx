@@ -3,11 +3,12 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import Reveal from '../components/Reveal'
 import MetaPanel from '../components/MetaPanel'
-import { getJourney, journeys } from '../data/journeys'
+import { useJourneys } from '../lib/ConfigProvider'
 
 export default function Journey() {
   const { slug } = useParams()
-  const journey = getJourney(slug)
+  const journeys = useJourneys()
+  const journey = journeys.find((j) => j.slug === slug)
   const heroRef = useRef(null)
   const { scrollYProgress } = useScroll({
     target: heroRef,

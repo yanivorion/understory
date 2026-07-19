@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useMotionValueEvent, useTransform } from 'framer-motion'
+import { useSiteConfig } from '../lib/ConfigProvider'
 
 // Scroll-scrubbed frame sequence (a walk through the forest), extracted from
 // the hike footage. As the visitor scrolls the tall container, the frames
@@ -8,6 +9,8 @@ const FRAME_COUNT = 180
 const framePath = (i) => `/frames/hike/frame_${String(i + 1).padStart(4, '0')}.jpg`
 
 export default function FrameSequenceHero() {
+  const { config } = useSiteConfig()
+  const { eyebrow, title, tagline, scrollHint } = config.hero
   const containerRef = useRef(null)
   const canvasRef = useRef(null)
   const imagesRef = useRef([])
@@ -145,7 +148,7 @@ export default function FrameSequenceHero() {
             transition={{ duration: 1.2, delay: 0.1, ease: [0.22, 0.61, 0.36, 1] }}
             className="eyebrow text-amber/90"
           >
-            Nature &amp; Sound Journeys
+            {eyebrow}
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
@@ -153,7 +156,7 @@ export default function FrameSequenceHero() {
             transition={{ duration: 1.4, delay: 0.25, ease: [0.22, 0.61, 0.36, 1] }}
             className="display mt-6 max-w-4xl text-[13vw] font-light leading-[1.02] text-paper md:text-[6.5rem]"
           >
-            Return to What Remembers You
+            {title}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -161,9 +164,7 @@ export default function FrameSequenceHero() {
             transition={{ duration: 1.4, delay: 0.45, ease: [0.22, 0.61, 0.36, 1] }}
             className="prose-serif mt-8 max-w-md text-lg text-fog/85"
           >
-            <span className="font-light">
-              Guided journeys where nature and sound meet the self.
-            </span>
+            <span className="font-light">{tagline}</span>
           </motion.p>
         </motion.div>
 
@@ -173,7 +174,7 @@ export default function FrameSequenceHero() {
           className="absolute bottom-10 left-1/2 z-10 -translate-x-1/2"
         >
           <div className="flex flex-col items-center gap-3">
-            <span className="meta text-fog/60">Scroll to walk in</span>
+            <span className="meta text-fog/60">{scrollHint}</span>
             <span className="h-12 w-px bg-gradient-to-b from-fog/50 to-transparent" />
           </div>
         </motion.div>

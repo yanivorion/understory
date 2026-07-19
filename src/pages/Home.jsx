@@ -7,9 +7,10 @@ import FrameSequenceHero from '../components/FrameSequenceHero'
 import ScrollText from '../components/ScrollText'
 import ParallaxBand from '../components/ParallaxBand'
 import TryThis from '../components/TryThis'
-import { journeys } from '../data/journeys'
+import { useJourneys, useSiteConfig } from '../lib/ConfigProvider'
 
 function JourneyWidget() {
+  const journeys = useJourneys()
   return (
     <section className="bg-ink py-28 md:py-40">
       <div className="mx-auto max-w-container px-6 md:px-10">
@@ -55,6 +56,8 @@ function JourneyWidget() {
 }
 
 function PhilosophyStatement() {
+  const { config } = useSiteConfig()
+  const { eyebrow, lead, text } = config.philosophy
   const ref = useRef(null)
   // Pin progress: 0 the instant the section reaches the top of the fold (0px),
   // 1 when the pin ends. The typing is driven entirely by this — so it does not
@@ -94,10 +97,10 @@ function PhilosophyStatement() {
       <div className="sticky top-0 flex min-h-screen items-center overflow-hidden py-24 md:h-screen md:py-0">
         {/* coast to coast — full-bleed statement */}
         <div className="w-full px-6 md:px-14">
-          <p className="eyebrow mb-10 text-clay">Philosophy</p>
+          <p className="eyebrow mb-10 text-clay">{eyebrow}</p>
           <ScrollText
-            lead="Nature doesn’t perform for us. It waits."
-            text="My work is to slow a person down until they can meet it — and themselves — without armor. Sound opens what silence alone cannot reach; the forest holds what the mind has been avoiding. You are not here to be fixed, and not here to escape. You are here, on real ground, in real time, to arrive."
+            lead={lead}
+            text={text}
             progress={progress}
             start={0.04}
             end={0.92}
@@ -113,12 +116,13 @@ function PhilosophyStatement() {
 }
 
 function Recognition() {
-  const items = ['Stillpoint Journal', 'Wildmind Quarterly', 'The Somatic Review']
+  const { config } = useSiteConfig()
+  const { eyebrow, items, award } = config.recognition
   return (
     <section className="bg-ink py-24">
       <div className="mx-auto max-w-container px-6 md:px-10">
         <Reveal className="text-center">
-          <p className="eyebrow text-mist">Recognition</p>
+          <p className="eyebrow text-mist">{eyebrow}</p>
           <div className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-10 gap-y-6">
             {items.map((it) => (
               <span key={it} className="display text-xl text-fog/70 md:text-2xl">
@@ -127,9 +131,7 @@ function Recognition() {
             ))}
           </div>
           <p className="prose-serif mx-auto mt-10 max-w-xl text-fog/60">
-            <span className="font-light">
-              Recipient of the Nordic Wellbeing Innovation Award.
-            </span>
+            <span className="font-light">{award}</span>
           </p>
         </Reveal>
       </div>
@@ -138,23 +140,21 @@ function Recognition() {
 }
 
 function ContactBand() {
+  const { config } = useSiteConfig()
+  const { eyebrow, heading, blurb, email, phone } = config.contact
   return (
     <section id="begin" className="bg-parch py-28 md:py-40">
       <div className="mx-auto max-w-container px-6 md:px-10">
         <div className="grid gap-16 md:grid-cols-[1fr_1.1fr]">
           <Reveal>
-            <p className="eyebrow text-bark">Begin Your Journey</p>
-            <h2 className="display mt-6 text-4xl text-bark md:text-6xl">
-              Whether you’re seeking clarity, release, or simply space to breathe
-            </h2>
+            <p className="eyebrow text-bark">{eyebrow}</p>
+            <h2 className="display mt-6 text-4xl text-bark md:text-6xl">{heading}</h2>
             <p className="prose-serif mt-8 max-w-md text-bark/70">
-              <span className="font-light">
-                Tell us a little about what you’re carrying. We’ll help you find the path that fits.
-              </span>
+              <span className="font-light">{blurb}</span>
             </p>
             <div className="mt-10 space-y-2 meta text-bark/60">
-              <p>info@mysite.com</p>
-              <p>123-456-7890</p>
+              <p>{email}</p>
+              <p>{phone}</p>
             </div>
           </Reveal>
           <Reveal delay={0.1}>
@@ -166,22 +166,28 @@ function ContactBand() {
   )
 }
 
+function Arrival() {
+  const { config } = useSiteConfig()
+  const { eyebrow, line1, line2 } = config.arrival
+  return (
+    <ParallaxBand eyebrow={eyebrow}>
+      <p className="display mt-6 max-w-3xl text-4xl leading-tight text-paper md:text-6xl">
+        {line1}
+      </p>
+      <p className="prose-serif mt-6 max-w-md text-fog/85">
+        <span className="font-light">{line2}</span>
+      </p>
+    </ParallaxBand>
+  )
+}
+
 export default function Home() {
   return (
     <>
       <FrameSequenceHero />
       <PhilosophyStatement />
       <JourneyWidget />
-      <ParallaxBand eyebrow="Arrival">
-        <p className="display mt-6 max-w-3xl text-4xl leading-tight text-paper md:text-6xl">
-          This is not escape. It is arrival.
-        </p>
-        <p className="prose-serif mt-6 max-w-md text-fog/85">
-          <span className="font-light">
-            The forest holds what the mind has been avoiding.
-          </span>
-        </p>
-      </ParallaxBand>
+      <Arrival />
       <TryThis />
       <Recognition />
       <ContactBand />

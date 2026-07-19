@@ -1,7 +1,10 @@
 import Reveal from '../components/Reveal'
 import ContactForm from '../components/ContactForm'
+import { useSiteConfig } from '../lib/ConfigProvider'
 
 export default function About() {
+  const { config } = useSiteConfig()
+  const { email, phone } = config.contact
   return (
     <div className="bg-ink">
       {/* Intro */}
@@ -110,8 +113,8 @@ export default function About() {
               Somewhere safe enough to stop performing
             </h2>
             <div className="mt-10 space-y-2 meta text-bark/60">
-              <p>info@mysite.com</p>
-              <p>123-456-7890</p>
+              <p>{email}</p>
+              <p>{phone}</p>
             </div>
           </Reveal>
           <Reveal delay={0.1}>

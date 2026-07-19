@@ -1,7 +1,10 @@
 import Reveal from '../components/Reveal'
 import ContactForm from '../components/ContactForm'
+import { useSiteConfig } from '../lib/ConfigProvider'
 
 export default function Contact() {
+  const { config } = useSiteConfig()
+  const { email, phone, addressLine1, addressLine2 } = config.contact
   return (
     <div className="relative bg-ink">
       {/* Soft forest backdrop */}
@@ -42,9 +45,9 @@ export default function Contact() {
                 <p className="eyebrow text-mist">Address</p>
                 <p className="prose-serif mt-4 text-lg text-fog/85">
                   <span className="font-light">
-                    500 Terry Francine St
+                    {addressLine1}
                     <br />
-                    San Francisco, CA 94158
+                    {addressLine2}
                   </span>
                 </p>
               </div>
@@ -52,20 +55,20 @@ export default function Contact() {
               <div>
                 <p className="eyebrow text-mist">Tel</p>
                 <a
-                  href="tel:1234567890"
+                  href={`tel:${phone.replace(/[^0-9+]/g, '')}`}
                   className="prose-serif mt-4 block text-lg text-fog/85 transition-colors hover:text-amber"
                 >
-                  <span className="font-light">123-456-7890</span>
+                  <span className="font-light">{phone}</span>
                 </a>
               </div>
               <div className="h-px w-full hairline" />
               <div>
                 <p className="eyebrow text-mist">Email</p>
                 <a
-                  href="mailto:info@mysite.com"
+                  href={`mailto:${email}`}
                   className="prose-serif mt-4 block text-lg text-fog/85 transition-colors hover:text-amber"
                 >
-                  <span className="font-light">info@mysite.com</span>
+                  <span className="font-light">{email}</span>
                 </a>
               </div>
             </div>

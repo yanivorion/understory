@@ -4,17 +4,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#141009',      // deep warm near-black
-        bark: '#041f0a',     // deep forest green
-        umber: '#3a2f21',
-        moss: '#5c6650',     // muted forest green
-        sage: '#8a9179',
-        clay: '#ffe1c7',     // warm peach accent
-        amber: '#c99a5b',    // golden-hour gold
-        paper: '#ece3d3',    // warm cream
-        parch: '#e3d8c4',    // deeper parchment
-        fog: '#cabfab',
-        mist: '#a89e8b',
+        // Backed by CSS custom properties (defaults in src/index.css) so the
+        // /studio dashboard can retune the palette at runtime without
+        // touching this file. Tailwind's color-mix-based opacity modifiers
+        // (e.g. bg-ink/85) work fine against var() values.
+        ink: 'var(--color-ink)',      // deep warm near-black
+        bark: 'var(--color-bark)',     // deep forest green
+        umber: 'var(--color-umber)',
+        moss: 'var(--color-moss)',     // muted forest green
+        sage: 'var(--color-sage)',
+        clay: 'var(--color-clay)',     // warm peach accent
+        amber: 'var(--color-amber)',    // golden-hour gold
+        paper: 'var(--color-paper)',    // warm cream
+        parch: 'var(--color-parch)',    // deeper parchment
+        fog: 'var(--color-fog)',
+        mist: 'var(--color-mist)',
       },
       fontFamily: {
         display: ['Merriweather', 'Georgia', 'serif'],

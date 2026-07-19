@@ -1,0 +1,59 @@
+{
+  // Singleton record holding every editable piece of copy + theme color for
+  // the live site. Read is public (anonymous visitors need it to render the
+  // page); writes are restricted to admins via /studio.
+  "name": "SiteConfig",
+  "type": "object",
+  "properties": {
+    "theme": {
+      "type": "object",
+      "description": "Hex color overrides, keyed by Tailwind color name (ink, bark, umber, moss, sage, clay, amber, paper, parch, fog, mist). Applied at runtime as --color-* CSS custom properties."
+    },
+    "hero": {
+      "type": "object",
+      "description": "Home hero (frame-sequence) overlay text: { eyebrow, title, tagline, scrollHint }."
+    },
+    "philosophy": {
+      "type": "object",
+      "description": "Home philosophy statement: { eyebrow, lead, text }."
+    },
+    "recognition": {
+      "type": "object",
+      "description": "Home recognition band: { eyebrow, items: string[], award }."
+    },
+    "arrival": {
+      "type": "object",
+      "description": "Home 'Arrival' parallax band: { eyebrow, line1, line2 }."
+    },
+    "contact": {
+      "type": "object",
+      "description": "Shared contact details used on Home, About, Contact, Footer: { eyebrow, heading, blurb, email, phone, addressLine1, addressLine2 }."
+    },
+    "footer": {
+      "type": "object",
+      "description": "Footer copy: { tagline, bottomNote }."
+    },
+    "journeys": {
+      "type": "array",
+      "description": "Overrides for the four journey cards, matched by slug against src/data/journeys.js. Images and the Entry/Immersion/Emergence arc stay static; only these summary fields are editable.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "slug": { "type": "string" },
+          "title": { "type": "string" },
+          "tagline": { "type": "string" },
+          "duration": { "type": "string" },
+          "location": { "type": "string" },
+          "sound": { "type": "string" },
+          "intro": { "type": "string" }
+        }
+      }
+    }
+  },
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": true,
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

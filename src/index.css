@@ -4,6 +4,21 @@
 
 :root {
   color-scheme: dark;
+
+  /* Palette — editable live from /studio → Theme. Values here are the
+     defaults; ConfigProvider overwrites them at runtime once a saved
+     config loads, so nothing changes visually until someone edits it. */
+  --color-ink: #141009;
+  --color-bark: #041f0a;
+  --color-umber: #3a2f21;
+  --color-moss: #5c6650;
+  --color-sage: #8a9179;
+  --color-clay: #ffe1c7;
+  --color-amber: #c99a5b;
+  --color-paper: #ece3d3;
+  --color-parch: #e3d8c4;
+  --color-fog: #cabfab;
+  --color-mist: #a89e8b;
 }
 
 html {
@@ -14,8 +29,8 @@ html {
 
 body {
   margin: 0;
-  background-color: #141009;
-  color: #ece3d3;
+  background-color: var(--color-ink);
+  color: var(--color-paper);
   font-family: 'Product Sans', 'Google Sans', system-ui, sans-serif;
   font-weight: 400;
   overflow-x: hidden;
@@ -69,13 +84,13 @@ body {
 }
 
 ::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: #141009; }
-::-webkit-scrollbar-thumb { background: #3a2f21; border-radius: 8px; }
-::-webkit-scrollbar-thumb:hover { background: #5c6650; }
+::-webkit-scrollbar-track { background: var(--color-ink); }
+::-webkit-scrollbar-thumb { background: var(--color-umber); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-moss); }
 
 ::selection {
-  background: rgba(201, 154, 91, 0.28);
-  color: #f3ecdd;
+  background: color-mix(in srgb, var(--color-amber) 28%, transparent);
+  color: var(--color-paper);
 }
 
 @media (prefers-reduced-motion: reduce) {
