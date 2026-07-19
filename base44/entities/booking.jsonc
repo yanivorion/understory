@@ -1,0 +1,33 @@
+{
+  // Booking / inquiry captured by the contact + "Book a Session" forms.
+  // Wire up by pointing src/lib/bookings.js at base44.entities.Booking.create(payload).
+  "name": "Booking",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "description": "Full name of the person inquiring" },
+    "email": { "type": "string", "format": "email", "description": "Contact email" },
+    "phone": { "type": "string", "description": "Contact phone (optional)" },
+    "journey": {
+      "type": "string",
+      "description": "Which journey they're drawn to",
+      "enum": [
+        "The Inner Clearing",
+        "Undersong",
+        "The Sky Reveal",
+        "Nightfall Communion",
+        "Not sure yet"
+      ]
+    },
+    "message": {
+      "type": "string",
+      "description": "What they're hoping to move through"
+    },
+    "status": {
+      "type": "string",
+      "description": "Workflow status of the inquiry",
+      "enum": ["new", "contacted", "booked", "closed"],
+      "default": "new"
+    }
+  },
+  "required": ["name", "email"]
+}
