@@ -104,6 +104,9 @@ function PhilosophyStatement() {
             className="text-3xl font-light leading-[1.24] text-white md:text-5xl md:leading-[1.2] lg:text-[3.6rem] lg:leading-[1.16]"
           />
         </div>
+
+        {/* Bottom fade — the green dissolves into the section below */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[30vh] bg-gradient-to-b from-transparent to-ink" />
       </div>
     </section>
   )
