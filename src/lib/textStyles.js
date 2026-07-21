@@ -14,6 +14,8 @@ export const TEXT_STYLE_DEFAULTS = {
   textTransform: "",
   textDecoration: "",
   opacity: null,
+  maxWidth: null,
+  maxWidthUnit: "ch",
 };
 
 /** Every editable text field on the site. */
@@ -45,23 +47,23 @@ export const TEXT_FIELD_REGISTRY = [
 /** Baseline typography matching the shipped design (used when config has no override). */
 export const DEFAULT_FIELD_STYLES = {
   "hero.eyebrow": { fontId: "product-sans", fontSize: 12, fontWeight: 500, letterSpacing: 0.06, letterSpacingUnit: "em", color: "#c99a5b", opacity: 0.9 },
-  "hero.title": { fontId: "merriweather", fontSize: 6.5, fontSizeUnit: "rem", fontWeight: 300, lineHeight: 1.02, color: "#ece3d3" },
+  "hero.title": { fontId: "fraunces", fontSize: 6.5, fontSizeUnit: "rem", fontWeight: 800, lineHeight: 1.02, color: "#ece3d3" },
   "hero.tagline": { fontId: "product-sans", fontSize: 18, fontWeight: 300, lineHeight: 1.7, color: "#cabfab", opacity: 0.85 },
   "hero.scrollHint": { fontId: "product-sans", fontSize: 12, letterSpacing: 0.02, letterSpacingUnit: "em", color: "#cabfab", opacity: 0.6 },
   "philosophy.eyebrow": { fontId: "product-sans", fontSize: 12, fontWeight: 500, letterSpacing: 0.06, letterSpacingUnit: "em", color: "#ffe1c7" },
-  "philosophy.lead": { fontId: "merriweather", fontSize: 3.6, fontSizeUnit: "rem", fontWeight: 300, lineHeight: 1.16, color: "#ffffff" },
-  "philosophy.text": { fontId: "merriweather", fontSize: 3.6, fontSizeUnit: "rem", fontWeight: 300, lineHeight: 1.16, color: "#ffffff" },
+  "philosophy.lead": { fontId: "fraunces", fontSize: 3.6, fontSizeUnit: "rem", fontWeight: 300, lineHeight: 1.16, color: "#ffffff" },
+  "philosophy.text": { fontId: "fraunces", fontSize: 3.6, fontSizeUnit: "rem", fontWeight: 300, lineHeight: 1.16, color: "#ffffff" },
   "recognition.eyebrow": { fontId: "product-sans", fontSize: 12, fontWeight: 500, letterSpacing: 0.06, letterSpacingUnit: "em", color: "#a89e8b" },
-  "recognition.item": { fontId: "merriweather", fontSize: 24, fontWeight: 400, color: "#cabfab", opacity: 0.7 },
-  "recognition.award": { fontId: "merriweather", fontSize: 18, fontWeight: 300, lineHeight: 1.7, color: "#cabfab", opacity: 0.6 },
+  "recognition.item": { fontId: "fraunces", fontSize: 24, fontWeight: 400, color: "#cabfab", opacity: 0.7 },
+  "recognition.award": { fontId: "fraunces", fontSize: 18, fontWeight: 300, lineHeight: 1.7, color: "#cabfab", opacity: 0.6 },
   "arrival.eyebrow": { fontId: "product-sans", fontSize: 12, fontWeight: 500, letterSpacing: 0.06, letterSpacingUnit: "em", color: "#c99a5b", opacity: 0.9 },
-  "arrival.line1": { fontId: "merriweather", fontSize: 60, fontWeight: 400, lineHeight: 1.04, color: "#ece3d3" },
+  "arrival.line1": { fontId: "fraunces", fontSize: 60, fontWeight: 400, lineHeight: 1.04, color: "#ece3d3" },
   "arrival.line2": { fontId: "merriweather", fontSize: 18, fontWeight: 300, lineHeight: 1.7, color: "#cabfab", opacity: 0.85 },
   "journeys.eyebrow": { fontId: "product-sans", fontSize: 12, fontWeight: 500, letterSpacing: 0.06, letterSpacingUnit: "em", color: "#ffe1c7" },
-  "journeys.heading": { fontId: "merriweather", fontSize: 60, fontWeight: 400, lineHeight: 1.04, color: "#ece3d3" },
-  "journeys.cardTitle": { fontId: "merriweather", fontSize: 20, fontWeight: 400, color: "#ece3d3" },
+  "journeys.heading": { fontId: "fraunces", fontSize: 60, fontWeight: 400, lineHeight: 1.04, color: "#ece3d3" },
+  "journeys.cardTitle": { fontId: "fraunces", fontSize: 20, fontWeight: 400, color: "#ece3d3" },
   "contact.eyebrow": { fontId: "product-sans", fontSize: 12, fontWeight: 500, letterSpacing: 0.06, letterSpacingUnit: "em", color: "#041f0a" },
-  "contact.heading": { fontId: "merriweather", fontSize: 60, fontWeight: 400, lineHeight: 1.04, color: "#041f0a" },
+  "contact.heading": { fontId: "fraunces", fontSize: 60, fontWeight: 400, lineHeight: 1.04, color: "#041f0a" },
   "contact.blurb": { fontId: "merriweather", fontSize: 18, fontWeight: 300, lineHeight: 1.7, color: "#041f0a", opacity: 0.7 },
   "contact.details": { fontId: "product-sans", fontSize: 12, letterSpacing: 0.02, letterSpacingUnit: "em", color: "#041f0a", opacity: 0.6 },
   "footer.tagline": { fontId: "merriweather", fontSize: 16, fontWeight: 300, lineHeight: 1.7, color: "#cabfab", opacity: 0.7 },
@@ -91,10 +93,40 @@ export function textStyleToCss(style) {
     css.letterSpacing = `${s.letterSpacing}${s.letterSpacingUnit || "em"}`;
   }
   if (s.color) css.color = s.color;
-  if (s.textAlign) css.textAlign = s.textAlign;
   if (s.textTransform) css.textTransform = s.textTransform;
   if (s.textDecoration) css.textDecoration = s.textDecoration;
   if (s.opacity != null && s.opacity !== "") css.opacity = s.opacity;
+
+  if (s.maxWidth != null && s.maxWidth !== "") {
+    css.maxWidth = `${s.maxWidth}${s.maxWidthUnit || "ch"}`;
+    css.display = "block";
+    css.whiteSpace = "normal";
+    css.overflowWrap = "break-word";
+  }
+
+  if (s.textAlign) {
+    css.textAlign = s.textAlign;
+    if (!css.display) css.display = "block";
+    if (s.maxWidth == null || s.maxWidth === "") css.maxWidth = css.maxWidth || "100%";
+
+    if (s.textAlign === "center") {
+      css.width = "fit-content";
+      css.maxWidth = s.maxWidth != null && s.maxWidth !== "" ? css.maxWidth : "100%";
+      css.marginLeft = "auto";
+      css.marginRight = "auto";
+      css.alignSelf = "center";
+    } else if (s.textAlign === "right") {
+      css.width = "fit-content";
+      css.marginLeft = "auto";
+      css.marginRight = "0";
+      css.alignSelf = "flex-end";
+    } else if (s.textAlign === "justify") {
+      css.width = "100%";
+      css.alignSelf = "stretch";
+    } else if (s.textAlign === "left") {
+      css.alignSelf = "flex-start";
+    }
+  }
 
   return css;
 }
@@ -109,7 +141,7 @@ export function mergeTextStyles(base = {}, incoming) {
 }
 
 export function collectUsedFontIds(textStyles) {
-  const ids = new Set(["product-sans", "merriweather"]);
+  const ids = new Set(["product-sans", "fraunces"]);
   TEXT_FIELD_REGISTRY.forEach(({ key }) => {
     const resolved = resolveTextStyle(textStyles, key);
     if (resolved.fontId) ids.add(resolved.fontId);

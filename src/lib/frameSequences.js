@@ -4,6 +4,7 @@
 // public/frames/<id>/ and add an entry here, or run:
 //   npm run import:video-scrub
 import videoSequences from "./videoFrameSequences.json";
+import { resolveFrameAsset } from "./frameUrls";
 
 const VIDEO_FRAME_SEQUENCES = Object.fromEntries(
   videoSequences.map((seq) => [seq.id, seq])
@@ -63,8 +64,17 @@ export const FRAME_SEQUENCES = {
 
 export const DEFAULT_SEQUENCE_ID = "hike";
 
-export function getSequence(id) {
-  return FRAME_SEQUENCES[id] || FRAME_SEQUENCES[DEFAULT_SEQUENCE_ID];
+function withCdn(seq) {
+  if (!seq) return seq;
+  return {
+    ...seq,
+    // path is a frame_ prefix — keep local; ScrollFrameSequence resolves per frame
+    thumbnail: resolveFrameAsset(seq.thumbnail),
+  };
 }
 
-export const SEQUENCE_OPTIONS = Object.values(FRAME_SEQUENCES);
+export function getSequence(id) {
+  return withCdn(FRAME_SEQUENCES[id] || FRAME_SEQUENCES[DEFAULT_SEQUENCE_ID]);
+}
+
+export const SEQUENCE_OPTIONS = Object.values(FRAME_SEQUENCES).map(withCdn);

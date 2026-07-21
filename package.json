@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:deploy": "node scripts/build-deploy.mjs",
+    "deploy": "node scripts/deploy.mjs",
+    "upload:frames": "node scripts/upload-frames-base44.mjs",
+    "sync:frames": "node scripts/sync-frames-cdn.mjs",
     "import:playground": "node scripts/import-playground-components.mjs",
     "import:video-scrub": "node scripts/import-video-scrub.mjs",
     "lint": "oxlint",
@@ -23,6 +27,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "autoprefixer": "^10.5.2",
+    "base44": "^0.1.1",
     "esbuild": "^0.28.1",
     "oxlint": "^1.71.0",
     "postcss": "^8.5.16",

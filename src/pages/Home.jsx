@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { useMotionValue } from 'framer-motion'
+import { motion, useMotionValue } from 'framer-motion'
 import Reveal from '../components/Reveal'
 import ContactForm from '../components/ContactForm'
 import FrameSequenceHero from '../components/FrameSequenceHero'
@@ -15,6 +15,7 @@ import { useEditorUI } from '../lib/EditorUIContext'
 import PlaygroundSection from '../components/PlaygroundSection'
 import { useTextStyle } from '../components/StyledText'
 import { isCustomSectionId, isPlaygroundSectionId, resolveSectionOrder } from '../lib/homeSections'
+import { resolvePhilosophyScroll } from '../lib/philosophyScroll'
 
 function JourneyWidget({ sectionId }) {
   const journeys = useJourneys()
@@ -25,8 +26,12 @@ function JourneyWidget({ sectionId }) {
   const cardTitleStyle = useTextStyle('journeys.cardTitle')
 
   return (
-    <section className="relative overflow-visible bg-ink py-28 md:py-40">
-      <SectionGradientStrips background={bg} sectionId={sectionId} />
+    <SectionBackground
+      background={bg}
+      sectionId={sectionId}
+      className="bg-ink py-28 md:py-40"
+      loadingLabel="Loading\u2026"
+    >
       <div className="relative z-10 mx-auto max-w-container px-6 md:px-10">
         <Reveal className="mx-auto max-w-2xl text-center">
           <p className="eyebrow" style={eyebrowStyle}>
@@ -37,7 +42,7 @@ function JourneyWidget({ sectionId }) {
           </h2>
         </Reveal>
 
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <motion.div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {journeys.map((j, i) => (
             <Reveal key={j.slug} delay={i * 0.08}>
               <Link to={`/journey/${j.slug}`} className="group block">
@@ -58,7 +63,7 @@ function JourneyWidget({ sectionId }) {
               </Link>
             </Reveal>
           ))}
-        </div>
+        </motion.div>
 
         <Reveal className="mt-14 text-center" delay={0.1}>
           <Link
@@ -69,7 +74,7 @@ function JourneyWidget({ sectionId }) {
           </Link>
         </Reveal>
       </div>
-    </section>
+    </SectionBackground>
   )
 }
 
@@ -88,7 +93,7 @@ function TryThisSection({ sectionId }) {
 const philosophyTextClass =
   'text-3xl font-light leading-[1.24] text-white md:text-5xl md:leading-[1.2] lg:text-[3.6rem] lg:leading-[1.16]'
 
-function PhilosophyText({ eyebrow, lead, text, progress }) {
+function PhilosophyText({ eyebrow, lead, text, progress, scroll }) {
   const eyebrowStyle = useTextStyle('philosophy.eyebrow')
   const bodyStyle = useTextStyle('philosophy.text')
   const leadStyle = useTextStyle('philosophy.lead')
@@ -102,8 +107,13 @@ function PhilosophyText({ eyebrow, lead, text, progress }) {
         lead={lead}
         text={text}
         progress={progress}
-        start={0.04}
-        end={0.92}
+        revealStart={scroll.revealStart}
+        revealEnd={scroll.revealEnd}
+        dimOpacity={scroll.dimOpacity}
+        solidOpacity={scroll.solidOpacity}
+        charSpread={scroll.charSpread}
+        triggerStart={scroll.triggerStart}
+        triggerEnd={scroll.triggerEnd}
         className={philosophyTextClass}
         style={bodyStyle}
         leadStyle={leadStyle}
@@ -112,16 +122,16 @@ function PhilosophyText({ eyebrow, lead, text, progress }) {
   )
 }
 
-function PhilosophyScrubContent({ eyebrow, lead, text }) {
+function PhilosophyScrubContent({ eyebrow, lead, text, scroll }) {
   const { scrollYProgress } = useFrameScroll()
   return (
     <div className="relative z-10 flex h-full items-center overflow-hidden">
-      <PhilosophyText eyebrow={eyebrow} lead={lead} text={text} progress={scrollYProgress} />
+      <PhilosophyText eyebrow={eyebrow} lead={lead} text={text} progress={scrollYProgress} scroll={scroll} />
     </div>
   )
 }
 
-function PhilosophyStatic({ bg, sectionId, eyebrow, lead, text }) {
+function PhilosophyStatic({ bg, sectionId, eyebrow, lead, text, scroll }) {
   const ref = useRef(null)
   const progress = useMotionValue(0)
 
@@ -170,7 +180,7 @@ function PhilosophyStatic({ bg, sectionId, eyebrow, lead, text }) {
       )}
       <SectionGradientStrips background={bg} sectionId={sectionId} />
       <div className="sticky top-0 flex min-h-screen items-center overflow-hidden py-24 md:h-screen md:py-0">
-        <PhilosophyText eyebrow={eyebrow} lead={lead} text={text} progress={progress} />
+        <PhilosophyText eyebrow={eyebrow} lead={lead} text={text} progress={progress} scroll={scroll} />
       </div>
     </section>
   )
@@ -180,16 +190,17 @@ function PhilosophyStatement({ sectionId }) {
   const { config } = useSiteConfig()
   const { eyebrow, lead, text } = config.philosophy
   const bg = config.backgrounds[sectionId] || config.backgrounds.philosophy
+  const scroll = resolvePhilosophyScroll(config)
 
   if (bg.type === 'scrub') {
     return (
       <SectionBackground background={bg} sectionId={sectionId} className="bg-bark" loadingLabel="Loading\u2026">
-        <PhilosophyScrubContent eyebrow={eyebrow} lead={lead} text={text} />
+        <PhilosophyScrubContent eyebrow={eyebrow} lead={lead} text={text} scroll={scroll} />
       </SectionBackground>
     )
   }
 
-  return <PhilosophyStatic bg={bg} sectionId={sectionId} eyebrow={eyebrow} lead={lead} text={text} />
+  return <PhilosophyStatic bg={bg} sectionId={sectionId} eyebrow={eyebrow} lead={lead} text={text} scroll={scroll} />
 }
 
 function Recognition({ sectionId }) {

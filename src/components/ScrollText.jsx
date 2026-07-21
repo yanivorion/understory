@@ -1,10 +1,8 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
-// A single character whose opacity is driven by scroll progress:
-// starts as translucent white, fills to solid white.
-function Char({ char, range, progress }) {
-  const opacity = useTransform(progress, range, [0.18, 1])
+function Char({ char, range, progress, dimOpacity, solidOpacity }) {
+  const opacity = useTransform(progress, range, [dimOpacity, solidOpacity])
   return <motion.span style={{ opacity }}>{char}</motion.span>
 }
 
@@ -18,18 +16,23 @@ export default function ScrollText({
   lead = '',
   leadStyle,
   progress: external,
-  start = 0,
-  end = 0.9,
+  revealStart = 0.04,
+  revealEnd = 0.92,
+  dimOpacity = 0.18,
+  solidOpacity = 1,
+  charSpread = 8,
+  triggerStart = 0.85,
+  triggerEnd = 0.32,
 }) {
   const ref = useRef(null)
   const internal = useScroll({
     target: ref,
-    offset: ['start 0.85', 'start 0.32'],
+    offset: [`start ${triggerStart}`, `start ${triggerEnd}`],
   }).scrollYProgress
   const progress = external || internal
 
   const revealChars = text.replace(/\s/g, '').length
-  const span = end - start || 1
+  const span = revealEnd - revealStart || 1
   let cursor = 0
 
   return (
@@ -39,10 +42,19 @@ export default function ScrollText({
         <span key={wi}>
           <span className="inline-block whitespace-nowrap">
             {word.split('').map((ch, ci) => {
-              const cs = start + span * (cursor / revealChars)
-              const ce = start + span * Math.min(1, (cursor + 8) / revealChars)
+              const cs = revealStart + span * (cursor / revealChars)
+              const ce = revealStart + span * Math.min(1, (cursor + charSpread) / revealChars)
               cursor += 1
-              return <Char key={ci} char={ch} range={[cs, ce]} progress={progress} />
+              return (
+                <Char
+                  key={ci}
+                  char={ch}
+                  range={[cs, ce]}
+                  progress={progress}
+                  dimOpacity={dimOpacity}
+                  solidOpacity={solidOpacity}
+                />
+              )
             })}
           </span>
           {wi < arr.length - 1 ? ' ' : ''}

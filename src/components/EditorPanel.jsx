@@ -20,6 +20,7 @@ import PlaygroundPicker from "./PlaygroundPicker";
 import TextStyleEditor from "./TextStyleEditor";
 import { buildStripGradient, normalizeGradientStrip, stripOverlapVh } from "../lib/gradientStrip";
 import { TEXT_FIELD_REGISTRY } from "../lib/textStyles";
+import { PHILOSOPHY_SCROLL_DEFAULTS, resolvePhilosophyScroll } from "../lib/philosophyScroll";
 
 // Fixed, theme-independent colors for the editor chrome. Deliberately NOT
 // using the site's own bg-ink/text-paper/etc. utility classes — those are
@@ -114,11 +115,12 @@ function Select({ label, value, onChange, options }) {
   );
 }
 
-function GradientEndpoint({ title, colorKey, opacityKey, strip, onChange, sectionKey, allowDefault, inheritFrom }) {
+function GradientEndpoint({ title, colorKey, opacityKey, strip, onChange, sectionKey, allowDefault, inheritFrom, defaultOpacity = 0 }) {
   const fallback = NATIVE_BG_HEX[sectionKey] || "#141009";
   const inherited = inheritFrom ? strip[inheritFrom] : "";
   const color = strip[colorKey] || inherited || fallback;
-  const opacity = strip[opacityKey] ?? (opacityKey === "opacity" ? 1 : 0);
+  const rawOpacity = strip[opacityKey];
+  const opacity = rawOpacity != null && rawOpacity !== "" ? rawOpacity : defaultOpacity;
 
   return (
     <div className="rounded-md p-2.5" style={{ background: C.inputBg, border: `1px solid ${C.border}` }}>
@@ -164,8 +166,9 @@ function GradientEndpoint({ title, colorKey, opacityKey, strip, onChange, sectio
 
 function GradientStripControls({ label, value, onChange, sectionKey, position }) {
   const strip = normalizeGradientStrip(value);
-  const edgeLabel = position === "top" ? "Edge (top)" : "Edge (bottom)";
-  const innerLabel = position === "top" ? "Inner (fade down)" : "Inner (fade up)";
+  const edgeLabel = position === "top" ? "Point 1 — edge (top)" : "Point 1 — edge (bottom)";
+  const midLabel = "Point 2 — middle";
+  const innerLabel = position === "top" ? "Point 3 — inner (fade down)" : "Point 3 — inner (fade up)";
 
   return (
     <div className="rounded-lg p-3" style={{ background: C.cardAlt, border: `1px solid ${C.border}` }}>
@@ -189,7 +192,7 @@ function GradientStripControls({ label, value, onChange, sectionKey, position })
             }}
             title="Gradient preview"
           />
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <GradientEndpoint
               title={edgeLabel}
               colorKey="color"
@@ -198,6 +201,18 @@ function GradientStripControls({ label, value, onChange, sectionKey, position })
               onChange={onChange}
               sectionKey={sectionKey}
               allowDefault
+              defaultOpacity={1}
+            />
+            <GradientEndpoint
+              title={midLabel}
+              colorKey="colorMid"
+              opacityKey="opacityMid"
+              strip={strip}
+              onChange={onChange}
+              sectionKey={sectionKey}
+              allowDefault={false}
+              inheritFrom="color"
+              defaultOpacity={(strip.opacity ?? 1) * 0.5 + (strip.opacityEnd ?? 0) * 0.5}
             />
             <GradientEndpoint
               title={innerLabel}
@@ -208,6 +223,7 @@ function GradientStripControls({ label, value, onChange, sectionKey, position })
               sectionKey={sectionKey}
               allowDefault={false}
               inheritFrom="color"
+              defaultOpacity={0}
             />
           </div>
           <label className="block">
@@ -411,6 +427,10 @@ export default function EditorPanel() {
     updateLocal({ backgrounds: { [section]: { [key]: value } } });
   const updateTextStyle = (key, value) =>
     updateLocal({ textStyles: { [key]: value } });
+  const updatePhilosophyScroll = (key, value) =>
+    updateLocal({ philosophyScroll: { [key]: value } });
+
+  const philosophyScroll = resolvePhilosophyScroll(config);
 
   const handleSave = async () => {
     setSaveState("saving");
@@ -616,6 +636,41 @@ export default function EditorPanel() {
                       onChange={(v) => updateField("philosophy", "text", v)}
                       multiline
                     />
+                    <p className="text-[10px] uppercase tracking-wide mt-2" style={{ color: C.textFaint }}>
+                      Scroll reveal animation
+                    </p>
+                    {[
+                      { key: "revealStart", label: "Reveal start", min: 0, max: 1, step: 0.01 },
+                      { key: "revealEnd", label: "Reveal end", min: 0, max: 1, step: 0.01 },
+                      { key: "dimOpacity", label: "Dim opacity", min: 0, max: 1, step: 0.01 },
+                      { key: "solidOpacity", label: "Lit opacity", min: 0, max: 1, step: 0.01 },
+                      { key: "charSpread", label: "Char spread", min: 1, max: 40, step: 1 },
+                      { key: "triggerStart", label: "Trigger start", min: 0, max: 1, step: 0.01 },
+                      { key: "triggerEnd", label: "Trigger end", min: 0, max: 1, step: 0.01 },
+                    ].map(({ key, label, min, max, step }) => (
+                      <label key={key} className="block">
+                        <span className="block mb-1 text-[10px] uppercase tracking-wide" style={{ color: C.textFaint }}>
+                          {label} ({philosophyScroll[key] ?? PHILOSOPHY_SCROLL_DEFAULTS[key]})
+                        </span>
+                        <input
+                          type="range"
+                          min={min}
+                          max={max}
+                          step={step}
+                          value={philosophyScroll[key] ?? PHILOSOPHY_SCROLL_DEFAULTS[key]}
+                          onChange={(e) => updatePhilosophyScroll(key, parseFloat(e.target.value))}
+                          className="w-full"
+                        />
+                      </label>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => updateLocal({ philosophyScroll: { ...PHILOSOPHY_SCROLL_DEFAULTS } })}
+                      className="text-[10px] uppercase tracking-wide self-start"
+                      style={{ color: C.accent }}
+                    >
+                      Reset animation defaults
+                    </button>
                   </SectionCard>
 
                   <SectionCard title="Recognition">

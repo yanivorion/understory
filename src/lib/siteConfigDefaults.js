@@ -6,6 +6,7 @@ import {
   defaultBackgroundForSection,
 } from "./homeSections";
 import { mergeTextStyles } from "./textStyles";
+import { PHILOSOPHY_SCROLL_DEFAULTS } from "./philosophyScroll";
 
 // Mirrors the --color-* custom properties defined in src/index.css /
 // tailwind.config.js. Keys here (camelCase where needed) map 1:1 to the
@@ -114,6 +115,7 @@ export const defaultSiteConfig = {
   homeSectionOrder: DEFAULT_HOME_SECTION_ORDER,
   customSections: {},
   textStyles: {},
+  philosophyScroll: { ...PHILOSOPHY_SCROLL_DEFAULTS },
 };
 
 export function mergeJourneyOverrides(base, overrides) {
@@ -186,6 +188,7 @@ export function mergeConfig(base, incoming) {
         : base.homeSectionOrder,
     customSections: mergeCustomSections(base.customSections, incoming.customSections),
     textStyles: mergeTextStyles(base.textStyles, incoming.textStyles),
+    philosophyScroll: { ...base.philosophyScroll, ...(incoming.philosophyScroll || {}) },
   };
 }
 

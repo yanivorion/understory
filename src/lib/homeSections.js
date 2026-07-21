@@ -78,8 +78,8 @@ export function defaultBackgroundForSection(sectionId) {
     type: "color",
     color: "",
     overlay: 0,
-    gradientTop: { enabled: false, color: "", colorEnd: "", opacity: 1, opacityEnd: 0, height: 22, overlap: 100 },
-    gradientBottom: { enabled: false, color: "", colorEnd: "", opacity: 1, opacityEnd: 0, height: 22, overlap: 100 },
+    gradientTop: { enabled: false, color: "", colorMid: "", colorEnd: "", opacity: 1, opacityMid: null, opacityEnd: 0, height: 22, overlap: 100 },
+    gradientBottom: { enabled: false, color: "", colorMid: "", colorEnd: "", opacity: 1, opacityMid: null, opacityEnd: 0, height: 22, overlap: 100 },
   };
 }
 

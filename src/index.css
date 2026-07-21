@@ -39,10 +39,10 @@ body {
   overflow-x: hidden;
 }
 
-/* Merriweather display; Google Sans (Product Sans) for labels + running text */
+/* Fraunces display; Google Sans (Product Sans) for labels + running text */
 @layer components {
   .display {
-    font-family: 'Merriweather', Georgia, serif;
+    font-family: 'Fraunces', Georgia, serif;
     font-weight: 400;
     line-height: 1.04;
     letter-spacing: 0.005em;

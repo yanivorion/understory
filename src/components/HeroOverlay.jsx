@@ -1,5 +1,5 @@
-import { useContext } from "react";
-import { motion, useTransform } from "framer-motion";
+import { useContext, useState } from "react";
+import { motion, useMotionValueEvent, useTransform } from "framer-motion";
 import { FrameScrollContext } from "./ScrollFrameSequence";
 import { useSiteConfig } from "../lib/ConfigProvider";
 import { useTextStyle } from "./StyledText";
@@ -21,8 +21,16 @@ export default function HeroOverlay() {
 }
 
 function ScrubbedOverlay({ hero, scrollYProgress }) {
-  const titleOpacity = useTransform(scrollYProgress, [0, 0.32, 0.5], [1, 1, 0]);
-  const titleY = useTransform(scrollYProgress, [0, 0.5], ["0%", "-40%"]);
+  // Latch: once faded, stay hidden — sticky unpin can make scrollYProgress jump backward
+  // and briefly bring opacity back to 1 (text flashes under the nav).
+  const [textHidden, setTextHidden] = useState(false);
+
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    if (v >= 0.36) setTextHidden(true);
+    if (v <= 0.02) setTextHidden(false);
+  });
+
+  const fadeOpacity = useTransform(scrollYProgress, [0, 0.22, 0.36], [1, 1, 0]);
   const hintOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0]);
   const vignette = useTransform(scrollYProgress, [0, 0.5, 1], [0.5, 0.32, 0.62]);
   const greenWash = useTransform(scrollYProgress, [0.5, 1], [0, 1]);
@@ -40,8 +48,11 @@ function ScrubbedOverlay({ hero, scrollYProgress }) {
       />
 
       <motion.div
-        style={{ opacity: titleOpacity, y: titleY }}
-        className="relative z-10 mx-auto flex h-full max-w-container flex-col items-start justify-center px-6 md:px-10"
+        style={{
+          opacity: textHidden ? 0 : fadeOpacity,
+          visibility: textHidden ? "hidden" : "visible",
+        }}
+        className="relative z-10 mx-auto flex h-full w-full max-w-container flex-col justify-center px-6 pt-24 pb-12 md:px-10 md:pt-28"
       >
         <HeroText hero={hero} />
       </motion.div>
@@ -64,7 +75,7 @@ function StaticOverlay({ hero }) {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: [0.22, 0.61, 0.36, 1] }}
-        className="relative z-10 mx-auto flex h-full max-w-container flex-col items-start justify-center px-6 md:px-10"
+        className="relative z-10 mx-auto flex h-full w-full max-w-container flex-col justify-center px-6 md:px-10"
       >
         <HeroText hero={hero} />
       </motion.div>

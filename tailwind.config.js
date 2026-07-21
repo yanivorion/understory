@@ -31,7 +31,7 @@ export default {
         mist: withOpacity('--color-mist'),
       },
       fontFamily: {
-        display: ['Merriweather', 'Georgia', 'serif'],
+        display: ['Fraunces', 'Georgia', 'serif'],
         sans: ['"Product Sans"', '"Google Sans"', 'system-ui', 'sans-serif'],
         mono: ['"Product Sans"', '"Google Sans"', 'system-ui', 'sans-serif'],
       },

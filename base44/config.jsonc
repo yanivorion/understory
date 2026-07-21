@@ -3,7 +3,7 @@
   "description": "Immersive booking site for a nature and sound therapy studio",
   "site": {
     "installCommand": "npm install",
-    "buildCommand": "npm run build",
+    "buildCommand": "npm run build:deploy",
     "serveCommand": "npm run dev",
     "outputDirectory": "./dist"
   }

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useScroll } from "framer-motion";
 import SectionGradientStrips from "./SectionGradientStrips";
+import { resolveFrameImageSrc, ensureFrameManifest } from "../lib/frameUrls";
 
 /**
  * Reusable scroll-scrubbed frame-sequence background.
@@ -52,7 +53,7 @@ export default function ScrollFrameSequence({
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
 
   const frameUrl = useCallback(
-    (index) => `${framePath}${String(index + 1).padStart(4, "0")}.${ext}`,
+    (index) => resolveFrameImageSrc(framePath, index, ext),
     [framePath, ext]
   );
 
@@ -115,8 +116,10 @@ export default function ScrollFrameSequence({
 
     const loadOne = (i) =>
       new Promise((resolve) => {
+        const { src, crossOrigin } = frameUrl(i);
         const img = new Image();
         img.decoding = "async";
+        if (crossOrigin) img.crossOrigin = "anonymous";
         img.onload = () => {
           if (cancelled) return resolve();
           imagesRef.current[i] = img;
@@ -129,11 +132,16 @@ export default function ScrollFrameSequence({
           }
           resolve();
         };
-        img.onerror = () => resolve();
-        img.src = frameUrl(i);
+        img.onerror = () => {
+          if (import.meta.env.DEV) console.warn("Frame failed to load:", src);
+          resolve();
+        };
+        img.src = src;
       });
 
     async function run() {
+      await ensureFrameManifest();
+      if (cancelled) return;
       const eager = Math.min(eagerCount, frameCount);
       for (let i = 0; i < eager; i++) {
         if (cancelled) return;

@@ -58,7 +58,7 @@ export default function TextStyleEditor({ value, onChange, preview = "The forest
   return (
     <div className="flex flex-col gap-3">
       <div
-        className="rounded-md px-3 py-4 text-center truncate"
+        className="rounded-md px-3 py-4 text-center break-words"
         style={{ background: C.inputBg, border: `1px solid ${C.border}`, ...previewCss }}
       >
         {preview}
@@ -225,6 +225,32 @@ export default function TextStyleEditor({ value, onChange, preview = "The forest
           className="w-full"
         />
       </label>
+
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block">
+          <span className="block mb-1 text-[10px] uppercase tracking-wide" style={{ color: C.textFaint }}>
+            Max width
+          </span>
+          {numInput(style.maxWidth, (v) => patch({ maxWidth: v }), { min: 1, max: 2000, step: 1, placeholder: "Auto" })}
+        </label>
+        <label className="block">
+          <span className="block mb-1 text-[10px] uppercase tracking-wide" style={{ color: C.textFaint }}>
+            Width unit
+          </span>
+          <select
+            value={style.maxWidthUnit || "ch"}
+            onChange={(e) => patch({ maxWidthUnit: e.target.value })}
+            className="w-full rounded px-2 py-1.5 text-sm outline-none"
+            style={{ background: C.inputBg, color: C.text, border: `1px solid ${C.border}` }}
+          >
+            {["ch", "px", "rem", "em", "%", "vw"].map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       <div className="grid grid-cols-2 gap-2">
         <label className="block">

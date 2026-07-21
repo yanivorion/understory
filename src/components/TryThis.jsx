@@ -124,7 +124,7 @@ export default function TryThis() {
             x="120"
             y="360"
             fill="#ece3d3"
-            fontFamily="Merriweather, Georgia, serif"
+            fontFamily="Fraunces, Georgia, serif"
             fontWeight="300"
             fontSize="54"
           >
